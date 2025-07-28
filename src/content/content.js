@@ -12,32 +12,45 @@ class VoiceInputManager {
   }
 
   async init() {
-    // Load settings
-    await this.loadSettings();
-    
-    // Listen for messages from background script via window.postMessage
-    window.addEventListener('message', (event) => {
-      if (event.source !== window) return;
-      this.handleMessage(event.data);
-    });
+    try {
+      // Load settings
+      await this.loadSettings();
+      
+      // Store event listeners for cleanup
+      this.eventListeners = {
+        windowMessage: (event) => {
+          if (event.source !== window) return;
+          this.handleMessage(event.data);
+        },
+        runtimeMessage: (message, sender, sendResponse) => {
+          this.handleMessage(message);
+          sendResponse({ success: true });
+        },
+        documentClick: (event) => {
+          this.handleElementClick(event);
+        },
+        documentFocus: (event) => {
+          this.handleElementFocus(event);
+        }
+      };
 
-    // Listen for direct messages from popup/background
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      this.handleMessage(message);
-      sendResponse({ success: true });
-    });
+      // Listen for messages from background script via window.postMessage
+      window.addEventListener('message', this.eventListeners.windowMessage);
 
-    // Listen for clicks to detect active input elements
-    document.addEventListener('click', (event) => {
-      this.handleElementClick(event);
-    });
+      // Listen for direct messages from popup/background
+      chrome.runtime.onMessage.addListener(this.eventListeners.runtimeMessage);
 
-    // Listen for focus events
-    document.addEventListener('focusin', (event) => {
-      this.handleElementFocus(event);
-    });
+      // Listen for clicks to detect active input elements
+      document.addEventListener('click', this.eventListeners.documentClick);
 
-    console.log('Voice Input Manager initialized');
+      // Listen for focus events
+      document.addEventListener('focusin', this.eventListeners.documentFocus);
+
+      console.log('Voice Input Manager initialized');
+    } catch (error) {
+      console.error('Failed to initialize Voice Input Manager:', error);
+      this.sendError('Failed to initialize voice input');
+    }
   }
 
   async loadSettings() {
@@ -48,14 +61,17 @@ class VoiceInputManager {
         'continuousMode',
         'showInterimResults'
       ]);
+      
+      // Validate and sanitize settings
       this.settings = {
-        voiceEnabled: result.voiceEnabled ?? true,
-        language: result.language ?? 'en-US',
-        continuousMode: result.continuousMode ?? false,
-        showInterimResults: result.showInterimResults ?? true
+        voiceEnabled: Boolean(result.voiceEnabled ?? true),
+        language: this.validateLanguage(result.language ?? 'en-US'),
+        continuousMode: Boolean(result.continuousMode ?? false),
+        showInterimResults: Boolean(result.showInterimResults ?? true)
       };
     } catch (error) {
       console.error('Failed to load settings:', error);
+      // Fallback to safe defaults
       this.settings = {
         voiceEnabled: true,
         language: 'en-US',
@@ -63,6 +79,15 @@ class VoiceInputManager {
         showInterimResults: true
       };
     }
+  }
+
+  validateLanguage(lang) {
+    // Validate language code format
+    const validLanguages = [
+      'en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE', 'it-IT', 
+      'pt-BR', 'ja-JP', 'ko-KR', 'zh-CN'
+    ];
+    return validLanguages.includes(lang) ? lang : 'en-US';
   }
 
   initializeSpeechRecognition() {
@@ -151,7 +176,9 @@ class VoiceInputManager {
     );
   }
 
-  async startRecognition() {
+  async startRecognition(retryCount = 0) {
+    const maxRetries = 2;
+    
     if (!this.recognition) {
       // Initialize speech recognition if not already done
       this.initializeSpeechRecognition();
@@ -191,7 +218,16 @@ class VoiceInputManager {
       this.recognition.start();
     } catch (error) {
       console.error('Failed to start recognition:', error);
-      this.sendError('Failed to start voice recognition');
+      
+      // Retry logic for transient errors
+      if (retryCount < maxRetries) {
+        console.log(`Retrying recognition start (attempt ${retryCount + 1}/${maxRetries})`);
+        setTimeout(() => {
+          this.startRecognition(retryCount + 1);
+        }, 1000 * (retryCount + 1)); // Exponential backoff
+      } else {
+        this.sendError('Failed to start voice recognition after multiple attempts');
+      }
     }
   }
 
@@ -435,6 +471,39 @@ class VoiceInputManager {
     const indicator = document.getElementById(`voice-indicator-${id}`);
     if (indicator) {
       indicator.remove();
+    }
+  }
+
+  // Cleanup method for proper memory management
+  cleanup() {
+    try {
+      // Stop recognition if active
+      if (this.recognition && this.isListening) {
+        this.recognition.stop();
+      }
+
+      // Remove event listeners
+      if (this.eventListeners) {
+        window.removeEventListener('message', this.eventListeners.windowMessage);
+        chrome.runtime.onMessage.removeListener(this.eventListeners.runtimeMessage);
+        document.removeEventListener('click', this.eventListeners.documentClick);
+        document.removeEventListener('focusin', this.eventListeners.documentFocus);
+      }
+
+      // Remove all indicators
+      this.removeIndicator('listening');
+      this.removeIndicator('interim');
+      this.removeIndicator('voice-ready');
+      this.removeIndicator('error');
+
+      // Clear references
+      this.recognition = null;
+      this.activeElement = null;
+      this.eventListeners = null;
+
+      console.log('Voice Input Manager cleaned up');
+    } catch (error) {
+      console.error('Error during cleanup:', error);
     }
   }
 }

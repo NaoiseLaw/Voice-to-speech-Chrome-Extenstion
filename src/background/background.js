@@ -202,18 +202,24 @@ class BackgroundService {
     if (!tabId) return;
 
     try {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        function: (voiceData) => {
-          window.postMessage({
-            type: 'INSERT_VOICE_TEXT',
-            data: voiceData
-          }, '*');
-        },
-        args: [data]
+      await chrome.tabs.sendMessage(tabId, {
+        type: 'VOICE_RESULT',
+        data: data
       });
     } catch (error) {
       console.error('Failed to handle voice result:', error);
+      // Try to notify popup of the error
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'VOICE_ERROR',
+          error: {
+            message: 'Failed to process voice result',
+            timestamp: Date.now()
+          }
+        });
+      } catch (sendError) {
+        console.error('Failed to send error to popup:', sendError);
+      }
     }
   }
 
@@ -221,18 +227,24 @@ class BackgroundService {
     if (!tabId) return;
 
     try {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        function: (errorData) => {
-          window.postMessage({
-            type: 'VOICE_ERROR',
-            error: errorData
-          }, '*');
-        },
-        args: [error]
+      await chrome.tabs.sendMessage(tabId, {
+        type: 'VOICE_ERROR',
+        error: error
       });
     } catch (err) {
       console.error('Failed to handle voice error:', err);
+      // Try to notify popup of the error
+      try {
+        await chrome.runtime.sendMessage({
+          type: 'VOICE_ERROR',
+          error: {
+            message: 'Failed to process voice error',
+            timestamp: Date.now()
+          }
+        });
+      } catch (sendError) {
+        console.error('Failed to send error to popup:', sendError);
+      }
     }
   }
 

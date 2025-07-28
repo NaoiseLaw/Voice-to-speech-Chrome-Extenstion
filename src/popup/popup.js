@@ -10,27 +10,44 @@ class PopupController {
   }
 
   async init() {
-    // Get DOM elements
-    this.voiceBtn = document.getElementById('voiceBtn');
-    this.micIcon = document.getElementById('micIcon');
-    this.btnText = document.getElementById('btnText');
-    this.statusDot = document.getElementById('statusDot');
-    this.statusText = document.getElementById('statusText');
-    this.transcript = document.getElementById('transcript');
-    this.insertBtn = document.getElementById('insertBtn');
-    this.copyBtn = document.getElementById('copyBtn');
-    this.language = document.getElementById('language');
-    this.autoInsert = document.getElementById('autoInsert');
-    this.settingsBtn = document.getElementById('settingsBtn');
+    try {
+      // Get DOM elements with null checks
+      this.voiceBtn = document.getElementById('voiceBtn');
+      this.micIcon = document.getElementById('micIcon');
+      this.btnText = document.getElementById('btnText');
+      this.statusDot = document.getElementById('statusDot');
+      this.statusText = document.getElementById('statusText');
+      this.transcript = document.getElementById('transcript');
+      this.insertBtn = document.getElementById('insertBtn');
+      this.copyBtn = document.getElementById('copyBtn');
+      this.language = document.getElementById('language');
+      this.autoInsert = document.getElementById('autoInsert');
+      this.settingsBtn = document.getElementById('settingsBtn');
 
-    // Load settings and current status
-    await this.loadSettings();
-    await this.updateStatus();
-    
-    // Set up event listeners
-    this.setupEventListeners();
-    
-    console.log('Popup controller initialized');
+      // Validate required elements exist
+      const requiredElements = [
+        'voiceBtn', 'micIcon', 'btnText', 'statusDot', 
+        'statusText', 'transcript', 'insertBtn', 'copyBtn'
+      ];
+
+      for (const elementName of requiredElements) {
+        if (!this[elementName]) {
+          throw new Error(`Required element not found: ${elementName}`);
+        }
+      }
+
+      // Load settings and current status
+      await this.loadSettings();
+      await this.updateStatus();
+      
+      // Set up event listeners
+      this.setupEventListeners();
+      
+      console.log('Popup controller initialized');
+    } catch (error) {
+      console.error('Failed to initialize popup controller:', error);
+      this.showError('Failed to initialize popup');
+    }
   }
 
   setupEventListeners() {
