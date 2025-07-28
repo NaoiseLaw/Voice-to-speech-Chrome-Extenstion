@@ -15,10 +15,16 @@ class VoiceInputManager {
     // Load settings
     await this.loadSettings();
     
-    // Listen for messages from background script
+    // Listen for messages from background script via window.postMessage
     window.addEventListener('message', (event) => {
       if (event.source !== window) return;
       this.handleMessage(event.data);
+    });
+
+    // Listen for direct messages from popup/background
+    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+      this.handleMessage(message);
+      sendResponse({ success: true });
     });
 
     // Listen for clicks to detect active input elements

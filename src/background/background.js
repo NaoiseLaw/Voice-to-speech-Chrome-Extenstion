@@ -38,13 +38,23 @@ class BackgroundService {
     try {
       switch (message.type) {
         case 'START_VOICE_INPUT':
-          await this.startVoiceInput(sender.tab?.id);
-          sendResponse({ success: true });
+          try {
+            await this.startVoiceInput(sender.tab?.id);
+            sendResponse({ success: true });
+          } catch (error) {
+            console.error('Failed to start voice input:', error);
+            sendResponse({ success: false, error: error.message });
+          }
           break;
 
         case 'STOP_VOICE_INPUT':
-          await this.stopVoiceInput();
-          sendResponse({ success: true });
+          try {
+            await this.stopVoiceInput();
+            sendResponse({ success: true });
+          } catch (error) {
+            console.error('Failed to stop voice input:', error);
+            sendResponse({ success: false, error: error.message });
+          }
           break;
 
         case 'CHECK_PERMISSION':
@@ -91,34 +101,30 @@ class BackgroundService {
       return;
     }
 
-    this.currentTabId = tabId;
-    this.isListening = true;
-
-    // Check if we have microphone permission
-    if (!this.permissionGranted) {
-      const granted = await this.requestMicrophonePermission();
-      if (!granted) {
-        this.isListening = false;
-        console.log('Microphone permission denied');
-        return;
+    try {
+      // Get the active tab if not provided
+      if (!tabId) {
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tabs.length === 0) {
+          throw new Error('No active tab found');
+        }
+        tabId = tabs[0].id;
       }
-    }
 
-    // Send message to content script to start recognition
-    if (tabId) {
-      try {
-        await chrome.scripting.executeScript({
-          target: { tabId },
-          function: () => {
-            window.postMessage({
-              type: 'START_VOICE_RECOGNITION'
-            }, '*');
-          }
-        });
-      } catch (error) {
-        console.error('Failed to start voice input:', error);
-        this.isListening = false;
-      }
+      this.currentTabId = tabId;
+      this.isListening = true;
+
+      // Send message to content script to start recognition
+      await chrome.tabs.sendMessage(tabId, {
+        type: 'START_VOICE_RECOGNITION'
+      });
+
+      console.log('Voice input started successfully');
+    } catch (error) {
+      console.error('Failed to start voice input:', error);
+      this.isListening = false;
+      this.currentTabId = null;
+      throw error;
     }
   }
 
@@ -131,11 +137,8 @@ class BackgroundService {
 
     if (this.currentTabId) {
       try {
-        await chrome.scripting.executeScript({
-          target: { tabId: this.currentTabId },
-          function: () => {
-            window.postMessage({ type: 'STOP_VOICE_RECOGNITION' }, '*');
-          }
+        await chrome.tabs.sendMessage(this.currentTabId, {
+          type: 'STOP_VOICE_RECOGNITION'
         });
       } catch (error) {
         console.error('Failed to stop voice input:', error);

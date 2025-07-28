@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #5a6fd8;
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Popup Debug Test</h1>
+        
+        <div class="test-section">
+            <h3>🔍 Extension Status Check</h3>
+            <button class="button" onclick="checkExtensionStatus()">Check Extension Status</button>
+            <button class="button" onclick="checkPopupFiles()">Check Popup Files</button>
+            <button class="button" onclick="testBackgroundCommunication()">Test Background Communication</button>
+            
+            <div id="statusResults" class="status info" style="display: none;">
+                <strong>Status Results:</strong>
+                <div id="statusOutput"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎤 Voice Input Test</h3>
+            <p>Test the voice input functionality:</p>
+            
+            <input type="text" placeholder="Test input field 1..." id="testInput1">
+            <input type="email" placeholder="Test input field 2..." id="testInput2">
+            <textarea placeholder="Test textarea..." rows="3" id="testTextarea"></textarea>
+            
+            <button class="button" onclick="testVoiceInput()">Test Voice Input</button>
+            <button class="button" onclick="testMicrophonePermission()">Test Microphone Permission</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Debug Log</h3>
+            <div id="debugLog" class="log"></div>
+            <button class="button" onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚨 Common Issues & Solutions</h3>
+            <div class="status warning">
+                <strong>If popup doesn't work:</strong>
+                <ul>
+                    <li><strong>Extension not loading:</strong> Check chrome://extensions/ for errors</li>
+                    <li><strong>Popup not opening:</strong> Check manifest.json popup path</li>
+                    <li><strong>Buttons not working:</strong> Check popup.js for JavaScript errors</li>
+                    <li><strong>Voice not working:</strong> Check content script communication</li>
+                    <li><strong>Permission issues:</strong> Check microphone permissions in Chrome settings</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Manual Testing Steps</h3>
+            <div class="status success">
+                <strong>Test the extension manually:</strong>
+                <ol>
+                    <li>Click the extension icon in Chrome toolbar</li>
+                    <li>Check if popup opens without errors</li>
+                    <li>Click "Start Recording" button</li>
+                    <li>Allow microphone permission if prompted</li>
+                    <li>Speak into microphone</li>
+                    <li>Check if text appears in popup</li>
+                    <li>Click "Insert Text" to insert into a field</li>
+                    <li>Test "Copy Text" functionality</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.color = type === 'error' ? '#dc3545' : type === 'success' ? '#28a745' : '#6c757d';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            logDiv.appendChild(logEntry);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '';
+        }
+
+        async function checkExtensionStatus() {
+            const resultsDiv = document.getElementById('statusResults');
+            const outputDiv = document.getElementById('statusOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = '<p>Checking extension status...</p>';
+            
+            try {
+                // Check if extension is available
+                const extensionDetected = typeof chrome !== 'undefined' && chrome.runtime;
+                log(`Extension detected: ${extensionDetected}`, extensionDetected ? 'success' : 'error');
+                
+                if (extensionDetected) {
+                    // Check extension ID
+                    const manifest = chrome.runtime.getManifest();
+                    log(`Extension name: ${manifest.name}`, 'success');
+                    log(`Extension version: ${manifest.version}`, 'success');
+                    
+                    // Check permissions
+                    const permissions = manifest.permissions || [];
+                    log(`Permissions: ${permissions.join(', ')}`, 'info');
+                    
+                    // Check content scripts
+                    const contentScripts = manifest.content_scripts || [];
+                    log(`Content scripts: ${contentScripts.length}`, 'info');
+                    
+                    // Check popup
+                    const action = manifest.action || {};
+                    const popup = action.default_popup;
+                    log(`Popup path: ${popup}`, popup ? 'success' : 'error');
+                    
+                    outputDiv.innerHTML = `
+                        <p><strong>✅ Extension Status:</strong> Loaded</p>
+                        <p><strong>Name:</strong> ${manifest.name}</p>
+                        <p><strong>Version:</strong> ${manifest.version}</p>
+                        <p><strong>Popup:</strong> ${popup || 'Not configured'}</p>
+                        <p><strong>Permissions:</strong> ${permissions.join(', ')}</p>
+                        <p><strong>Content Scripts:</strong> ${contentScripts.length}</p>
+                    `;
+                    resultsDiv.className = 'status success';
+                } else {
+                    outputDiv.innerHTML = '<p><strong>❌ Extension not detected</strong></p>';
+                    resultsDiv.className = 'status error';
+                }
+            } catch (error) {
+                log(`Error checking extension: ${error.message}`, 'error');
+                outputDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+                resultsDiv.className = 'status error';
+            }
+        }
+
+        async function checkPopupFiles() {
+            const resultsDiv = document.getElementById('statusResults');
+            const outputDiv = document.getElementById('statusOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = '<p>Checking popup files...</p>';
+            
+            try {
+                // Try to access popup files
+                const popupFiles = [
+                    'src/popup/popup.html',
+                    'src/popup/popup.js',
+                    'src/popup/popup.css'
+                ];
+                
+                let results = [];
+                for (const file of popupFiles) {
+                    try {
+                        const response = await fetch(chrome.runtime.getURL(file));
+                        const exists = response.ok;
+                        results.push({ file, exists });
+                        log(`File ${file}: ${exists ? 'Found' : 'Missing'}`, exists ? 'success' : 'error');
+                    } catch (error) {
+                        results.push({ file, exists: false });
+                        log(`File ${file}: Error - ${error.message}`, 'error');
+                    }
+                }
+                
+                const allExist = results.every(r => r.exists);
+                outputDiv.innerHTML = `
+                    <p><strong>Popup Files Status:</strong></p>
+                    ${results.map(r => `<p>${r.file}: ${r.exists ? '✅ Found' : '❌ Missing'}</p>`).join('')}
+                `;
+                resultsDiv.className = allExist ? 'status success' : 'status error';
+            } catch (error) {
+                log(`Error checking popup files: ${error.message}`, 'error');
+                outputDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+                resultsDiv.className = 'status error';
+            }
+        }
+
+        async function testBackgroundCommunication() {
+            const resultsDiv = document.getElementById('statusResults');
+            const outputDiv = document.getElementById('statusOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = '<p>Testing background communication...</p>';
+            
+            try {
+                // Test basic message
+                const response = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+                log(`Background response: ${JSON.stringify(response)}`, 'success');
+                
+                outputDiv.innerHTML = `
+                    <p><strong>✅ Background Communication:</strong> Working</p>
+                    <p><strong>Response:</strong> ${JSON.stringify(response, null, 2)}</p>
+                `;
+                resultsDiv.className = 'status success';
+            } catch (error) {
+                log(`Background communication error: ${error.message}`, 'error');
+                outputDiv.innerHTML = `<p><strong>❌ Error:</strong> ${error.message}</p>`;
+                resultsDiv.className = 'status error';
+            }
+        }
+
+        async function testVoiceInput() {
+            log('Testing voice input...', 'info');
+            
+            try {
+                // Test starting voice input
+                const response = await chrome.runtime.sendMessage({ 
+                    type: 'START_VOICE_INPUT',
+                    language: 'en-US'
+                });
+                
+                log(`Voice input response: ${JSON.stringify(response)}`, response.success ? 'success' : 'error');
+                
+                if (response.success) {
+                    log('Voice input started successfully', 'success');
+                } else {
+                    log(`Voice input failed: ${response.error}`, 'error');
+                }
+            } catch (error) {
+                log(`Voice input error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testMicrophonePermission() {
+            log('Testing microphone permission...', 'info');
+            
+            try {
+                const permissionResult = await navigator.permissions.query({ name: 'microphone' });
+                log(`Microphone permission: ${permissionResult.state}`, 'info');
+                
+                if (permissionResult.state === 'granted') {
+                    log('Microphone permission granted', 'success');
+                } else if (permissionResult.state === 'prompt') {
+                    log('Microphone permission needs to be requested', 'warning');
+                } else {
+                    log('Microphone permission denied', 'error');
+                }
+            } catch (error) {
+                log(`Microphone permission error: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-check on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Debug page loaded', 'info');
+            log(`Chrome extension API available: ${typeof chrome !== 'undefined' && chrome.runtime}`, 'info');
+        });
+    </script>
+</body>
+</html> 
