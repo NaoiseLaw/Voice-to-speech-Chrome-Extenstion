@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup Width Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .popup-simulation {
+            width: 400px;
+            height: 500px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            margin: 20px auto;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .popup-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .popup-main {
+            padding: 20px 24px;
+            height: calc(100% - 120px);
+            overflow-y: auto;
+        }
+        .popup-footer {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+        }
+        .voice-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            cursor: pointer;
+            margin: 0 auto 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 0 4px;
+        }
+        .action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+        .action-btn.enabled {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .settings {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            gap: 12px;
+        }
+        .setting-select {
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+            background: white;
+            color: #333;
+            min-width: 140px;
+        }
+        .settings-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Popup Width Test - 400px</h1>
+        
+        <div class="test-section">
+            <h3>📏 Popup Width Verification</h3>
+            <p>The popup width has been increased from 350px to 400px to ensure all buttons and elements are fully visible.</p>
+            
+            <div class="status info">
+                <strong>Changes Made:</strong>
+                <ul>
+                    <li>✅ Popup width: 350px → 400px</li>
+                    <li>✅ Action buttons: Increased padding and font size</li>
+                    <li>✅ Settings: Better spacing and larger dropdown</li>
+                    <li>✅ Footer: Improved button sizing</li>
+                    <li>✅ Main content: Increased horizontal padding</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="popup-simulation">
+            <div class="popup-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 20px; background: rgba(255,255,255,0.2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">🎤</span>
+                    <h1 style="font-size: 16px; margin: 0;">Voice Input</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #4CAF50;"></span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="popup-main">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="voice-btn">
+                        <span style="font-size: 24px;">🎤</span>
+                        <span style="font-size: 10px; font-weight: 500; text-transform: uppercase;">Start Recording</span>
+                    </button>
+                    
+                    <div style="min-height: 40px; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <p style="font-size: 12px; color: #666; margin: 0;">Click the button above to start voice recording</p>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="action-btn" disabled>
+                        <span style="font-size: 12px;">📝</span>
+                        Insert Text
+                    </button>
+                    <button class="action-btn" disabled>
+                        <span style="font-size: 12px;">📋</span>
+                        Copy Text
+                    </button>
+                </div>
+                
+                <div class="settings">
+                    <div class="setting-row">
+                        <label style="font-size: 12px; color: #555; font-weight: 500;">Language:</label>
+                        <select class="setting-select">
+                            <option>English (US)</option>
+                            <option>Spanish</option>
+                            <option>French</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label style="font-size: 12px; color: #555; font-weight: 500;">Auto-insert text</label>
+                        <input type="checkbox">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="popup-footer">
+                <button class="settings-btn">
+                    <span style="font-size: 12px;">⚙️</span>
+                    Settings
+                </button>
+                <span style="font-size: 10px; color: #999;">v1.0.0</span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Verification Checklist</h3>
+            <div class="status success">
+                <strong>All elements should be fully visible:</strong>
+                <ul>
+                    <li>✅ Header with logo and status</li>
+                    <li>✅ Voice recording button (centered)</li>
+                    <li>✅ Action buttons (Insert Text, Copy Text)</li>
+                    <li>✅ Settings section with dropdown</li>
+                    <li>✅ Footer with Settings button and version</li>
+                    <li>✅ No horizontal scroll bars</li>
+                    <li>✅ All text readable without truncation</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Test Instructions</h3>
+            <ol>
+                <li>Load the extension in Chrome</li>
+                <li>Click the extension icon</li>
+                <li>Verify all buttons are fully visible</li>
+                <li>Check that no text is cut off</li>
+                <li>Test all interactive elements</li>
+                <li>Ensure smooth scrolling if needed</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html> 
