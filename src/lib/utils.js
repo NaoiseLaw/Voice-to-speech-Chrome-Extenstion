@@ -133,14 +133,98 @@ const ValidationUtils = {
      * @returns {Object} - Validated settings with defaults
      */
     validateSettings(settings = {}) {
-        return {
-            language: this.isValidLanguage(settings.language) ? settings.language : 'en-US',
-            autoInsert: Boolean(settings.autoInsert),
-            continuousMode: Boolean(settings.continuousMode),
-            enableCommands: settings.enableCommands !== false,
-            enablePunctuation: settings.enablePunctuation !== false,
-            noiseSuppression: settings.noiseSuppression !== false
+        const defaults = {
+            language: 'en-US',
+            autoInsert: false,
+            continuousMode: false,
+            enableCommands: true,
+            enablePunctuation: true,
+            noiseSuppression: true,
+            showInterimResults: true,
+            audioQuality: 'medium',
+            enableEchoCancellation: true,
+            enableLocalProcessing: false,
+            clearDataOnClose: false,
+            dataRetention: 0,
+            showVoiceIndicators: true,
+            autoFocusOnInput: false,
+            indicatorPosition: 'top-right',
+            maxAlternatives: 1
         };
+
+        const validated = { ...defaults };
+
+        // Validate and migrate settings
+        for (const [key, value] of Object.entries(settings)) {
+            switch (key) {
+                case 'language':
+                    validated.language = this.isValidLanguage(value) ? value : defaults.language;
+                    break;
+                    
+                case 'autoInsert':
+                case 'continuousMode':
+                case 'enableCommands':
+                case 'enablePunctuation':
+                case 'noiseSuppression':
+                case 'showInterimResults':
+                case 'enableEchoCancellation':
+                case 'enableLocalProcessing':
+                case 'clearDataOnClose':
+                case 'showVoiceIndicators':
+                case 'autoFocusOnInput':
+                    validated[key] = typeof value === 'boolean' ? value : defaults[key];
+                    break;
+                    
+                case 'audioQuality':
+                    validated.audioQuality = ['low', 'medium', 'high'].includes(value) ? value : defaults.audioQuality;
+                    break;
+                    
+                case 'indicatorPosition':
+                    validated.indicatorPosition = ['top-right', 'top-left', 'bottom-right', 'bottom-left'].includes(value) ? value : defaults.indicatorPosition;
+                    break;
+                    
+                case 'maxAlternatives':
+                    const num = parseInt(value);
+                    validated.maxAlternatives = (num >= 1 && num <= 3) ? num : defaults.maxAlternatives;
+                    break;
+                    
+                case 'dataRetention':
+                    const retention = parseInt(value);
+                    validated.dataRetention = [0, 1, 7, 30].includes(retention) ? retention : defaults.dataRetention;
+                    break;
+                    
+                // Handle legacy settings
+                case 'voiceIndicators':
+                    validated.showVoiceIndicators = value;
+                    break;
+                    
+                case 'interimResults':
+                    validated.showInterimResults = value;
+                    break;
+                    
+                case 'echoCancellation':
+                    validated.enableEchoCancellation = value;
+                    break;
+            }
+        }
+
+        return validated;
+    },
+
+    async migrateSettings() {
+        try {
+            const oldSettings = await this.load('oldSettings');
+            if (oldSettings && Object.keys(oldSettings).length > 0) {
+                const migrated = this.validateSettings(oldSettings);
+                await this.save(migrated);
+                await this.remove('oldSettings');
+                console.log('Settings migrated successfully');
+                return migrated;
+            }
+        } catch (error) {
+            console.error('Failed to migrate settings:', error);
+        }
+        return null;
     },
 
     /**
@@ -366,6 +450,71 @@ const PerformanceUtils = {
                 setTimeout(() => inThrottle = false, limit);
             }
         };
+    },
+
+    /**
+     * Track performance metrics
+     */
+    metrics: new Map(),
+    marks: new Map(),
+    
+    startTimer(name) {
+        this.marks.set(name, performance.now());
+    },
+    
+    endTimer(name) {
+        const start = this.marks.get(name);
+        if (start) {
+            const duration = performance.now() - start;
+            this.metrics.set(name, duration);
+            this.marks.delete(name);
+            return duration;
+        }
+        return 0;
+    },
+    
+    getMetrics() {
+        return Object.fromEntries(this.metrics);
+    },
+    
+    clearMetrics() {
+        this.metrics.clear();
+        this.marks.clear();
+    },
+    
+    logMetrics() {
+        console.log('Performance Metrics:', this.getMetrics());
+    }
+};
+
+// Memory management utilities
+const MemoryUtils = {
+    /**
+     * Track object memory usage
+     * @param {Object} obj - Object to track
+     * @param {string} name - Name for tracking
+     */
+    trackObject(obj, name) {
+        if (window.performance && window.performance.memory) {
+            const memory = window.performance.memory;
+            console.log(`${name} - Memory: ${Math.round(memory.usedJSHeapSize / 1024 / 1024)}MB used`);
+        }
+    },
+
+    /**
+     * Check current memory usage
+     * @returns {Object|null} - Current memory usage or null if not available
+     */
+    checkMemoryUsage() {
+        if (window.performance && window.performance.memory) {
+            const memory = window.performance.memory;
+            return {
+                used: memory.usedJSHeapSize,
+                total: memory.totalJSHeapSize,
+                limit: memory.jsHeapSizeLimit
+            };
+        }
+        return null;
     }
 };
 
@@ -377,5 +526,6 @@ window.VoiceInputUtils = {
     Audio: AudioUtils,
     Text: TextUtils,
     Error: ErrorUtils,
-    Performance: PerformanceUtils
+    Performance: PerformanceUtils,
+    Memory: MemoryUtils
 }; 

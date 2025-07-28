@@ -98,26 +98,74 @@ class AdvancedSpeechEngine {
                 'double space': '  ',
                 'capitalize': 'CAPITALIZE',
                 'uppercase': 'UPPERCASE',
-                'lowercase': 'LOWERCASE',
-                'title case': 'TITLE_CASE'
+                'lowercase': 'lowercase',
+                'title case': 'TITLE_CASE',
+                'bold': 'BOLD',
+                'italic': 'ITALIC',
+                'underline': 'UNDERLINE'
             },
-            actions: {
-                'undo': 'UNDO',
-                'redo': 'REDO',
-                'select all': 'SELECT_ALL',
-                'delete word': 'DELETE_WORD',
-                'delete line': 'DELETE_LINE',
+            navigation: {
                 'next field': 'NEXT_FIELD',
                 'previous field': 'PREVIOUS_FIELD',
+                'select all': 'SELECT_ALL',
+                'select word': 'SELECT_WORD',
+                'select line': 'SELECT_LINE',
+                'go to start': 'GO_TO_START',
+                'go to end': 'GO_TO_END',
+                'go to beginning': 'GO_TO_START',
+                'move cursor left': 'MOVE_LEFT',
+                'move cursor right': 'MOVE_RIGHT',
+                'move cursor up': 'MOVE_UP',
+                'move cursor down': 'MOVE_DOWN'
+            },
+            editing: {
+                'undo': 'UNDO',
+                'redo': 'REDO',
+                'cut': 'CUT',
                 'copy': 'COPY',
                 'paste': 'PASTE',
-                'cut': 'CUT',
+                'delete': 'DELETE',
+                'delete word': 'DELETE_WORD',
+                'delete line': 'DELETE_LINE',
+                'delete character': 'DELETE_CHAR',
+                'backspace': 'BACKSPACE',
+                'clear': 'CLEAR',
+                'clear all': 'CLEAR_ALL'
+            },
+            text_manipulation: {
+                'find': 'FIND',
+                'find and replace': 'FIND_REPLACE',
+                'replace': 'REPLACE',
+                'replace all': 'REPLACE_ALL',
+                'duplicate line': 'DUPLICATE_LINE',
+                'move line up': 'MOVE_LINE_UP',
+                'move line down': 'MOVE_LINE_DOWN',
+                'indent': 'INDENT',
+                'outdent': 'OUTDENT',
+                'comment': 'COMMENT',
+                'uncomment': 'UNCOMMENT'
+            },
+            special_commands: {
+                'stop listening': 'STOP_LISTENING',
+                'pause': 'PAUSE',
+                'resume': 'RESUME',
+                'clear transcript': 'CLEAR_TRANSCRIPT',
                 'save': 'SAVE',
                 'submit': 'SUBMIT',
                 'enter': 'ENTER',
+                'tab': 'TAB',
                 'escape': 'ESCAPE',
-                'backspace': 'BACKSPACE',
-                'delete': 'DELETE'
+                'space': 'SPACE'
+            },
+            formatting_commands: {
+                'make bold': 'BOLD',
+                'make italic': 'ITALIC',
+                'make underline': 'UNDERLINE',
+                'make uppercase': 'UPPERCASE',
+                'make lowercase': 'lowercase',
+                'capitalize first letter': 'CAPITALIZE_FIRST',
+                'title case': 'TITLE_CASE',
+                'sentence case': 'SENTENCE_CASE'
             }
         };
     }

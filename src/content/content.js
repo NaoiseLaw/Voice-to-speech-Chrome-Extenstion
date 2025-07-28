@@ -19,10 +19,28 @@ class VoiceInputManager {
             this.initializeComponents();
             this.setupMessageListeners();
             this.setupPageListeners();
+            this.setupUnloadHandler();
             
             console.log('Voice Input Manager initialized');
         } catch (error) {
             console.error('Failed to initialize Voice Input Manager:', error);
+            // Try to recover from initialization errors
+            this.handleInitError(error);
+        }
+    }
+
+    handleInitError(error) {
+        console.error('Initialization error:', error);
+        
+        // Try to set up basic functionality even if some components fail
+        try {
+            this.setupMessageListeners();
+            this.setupPageListeners();
+            this.setupUnloadHandler();
+            
+            console.log('Basic functionality initialized despite errors');
+        } catch (recoveryError) {
+            console.error('Failed to recover from initialization error:', recoveryError);
         }
     }
 
@@ -164,39 +182,44 @@ class VoiceInputManager {
     }
 
     async startRecognition(retryCount = 0) {
+        if (!this.recognition) {
+            this.initializeSpeechRecognition();
+        }
+
+        if (this.isRecording) return;
+
         try {
             // Check microphone permission
             const hasPermission = await this.checkMicrophonePermission();
             if (!hasPermission) {
-                throw new Error('Microphone permission denied');
-            }
-
-            // Initialize recognition if needed
-            if (!this.recognition) {
-                this.initializeSpeechRecognition();
-            }
-
-            // Start performance monitoring
-            this.performanceOptimizer.startSession();
-
-            // Start recognition
-            this.recognition.start();
-            
-            console.log('Voice recognition started');
-        } catch (error) {
-            console.error('Failed to start recognition:', error);
-            
-            // Retry logic for permission issues
-            if (error.name === 'NotAllowedError' && retryCount < 3) {
-                console.log(`Retrying recognition (${retryCount + 1}/3)...`);
-                setTimeout(() => {
-                    this.startRecognition(retryCount + 1);
-                }, 1000 * Math.pow(2, retryCount)); // Exponential backoff
+                this.widget.showError('Microphone permission denied');
                 return;
             }
 
-            this.widget.showError(error.message);
-            this.sendMessageToPopup('VOICE_ERROR', { error: error.message });
+            this.shouldRestart = true;
+            this.recognition.start();
+
+            // Start performance monitoring
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: this.performanceOptimizer.getAudioConstraints(this.settings) 
+            });
+            this.performanceOptimizer.initializeAudioProcessing(stream);
+
+        } catch (error) {
+            console.error('Failed to start recognition:', error);
+            
+            // Retry logic with exponential backoff
+            if (retryCount < 3) {
+                const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+                console.log(`Retrying recognition in ${delay}ms (attempt ${retryCount + 1}/3)`);
+                
+                setTimeout(() => {
+                    this.startRecognition(retryCount + 1);
+                }, delay);
+            } else {
+                this.widget.showError('Failed to start voice recognition after multiple attempts');
+                this.handleRecognitionError({ error: 'max_retries_exceeded' });
+            }
         }
     }
 
@@ -244,34 +267,207 @@ class VoiceInputManager {
     }
 
     executeCommand(command) {
-        const commandMap = {
-            'undo': () => document.execCommand('undo'),
-            'redo': () => document.execCommand('redo'),
-            'select all': () => document.execCommand('selectAll'),
-            'delete word': () => {
-                const selection = window.getSelection();
-                if (selection.rangeCount > 0) {
-                    const range = selection.getRangeAt(0);
-                    const text = range.toString();
-                    const words = text.split(' ');
-                    if (words.length > 1) {
-                        words.pop();
-                        range.deleteContents();
-                        range.insertNode(document.createTextNode(words.join(' ')));
+        switch (command.action) {
+            // Basic editing
+            case 'undo':
+                document.execCommand('undo');
+                break;
+            case 'redo':
+                document.execCommand('redo');
+                break;
+            case 'cut':
+                document.execCommand('cut');
+                break;
+            case 'copy':
+                document.execCommand('copy');
+                break;
+            case 'paste':
+                document.execCommand('paste');
+                break;
+            case 'delete':
+                document.execCommand('delete');
+                break;
+            case 'backspace':
+                document.execCommand('backspace');
+                break;
+            case 'clear':
+            case 'clear_all':
+                if (this.activeElement) {
+                    this.activeElement.value = '';
+                    this.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                break;
+
+            // Selection commands
+            case 'select_all':
+                if (this.activeElement) {
+                    this.activeElement.select();
+                }
+                break;
+            case 'select_word':
+                // Select current word
+                if (this.activeElement && this.activeElement.setSelectionRange) {
+                    const value = this.activeElement.value;
+                    const cursorPos = this.activeElement.selectionStart;
+                    const wordStart = value.lastIndexOf(' ', cursorPos - 1) + 1;
+                    const wordEnd = value.indexOf(' ', cursorPos);
+                    const end = wordEnd === -1 ? value.length : wordEnd;
+                    this.activeElement.setSelectionRange(wordStart, end);
+                }
+                break;
+            case 'select_line':
+                // Select current line
+                if (this.activeElement && this.activeElement.setSelectionRange) {
+                    const value = this.activeElement.value;
+                    const cursorPos = this.activeElement.selectionStart;
+                    const lineStart = value.lastIndexOf('\n', cursorPos - 1) + 1;
+                    const lineEnd = value.indexOf('\n', cursorPos);
+                    const end = lineEnd === -1 ? value.length : lineEnd;
+                    this.activeElement.setSelectionRange(lineStart, end);
+                }
+                break;
+
+            // Navigation commands
+            case 'next_field':
+                this.focusNextField();
+                break;
+            case 'previous_field':
+                this.focusPreviousField();
+                break;
+            case 'go_to_start':
+                if (this.activeElement && this.activeElement.setSelectionRange) {
+                    this.activeElement.setSelectionRange(0, 0);
+                }
+                break;
+            case 'go_to_end':
+                if (this.activeElement && this.activeElement.setSelectionRange) {
+                    const length = this.activeElement.value.length;
+                    this.activeElement.setSelectionRange(length, length);
+                }
+                break;
+
+            // Text manipulation
+            case 'delete_word':
+                if (this.activeElement) {
+                    const value = this.activeElement.value;
+                    const cursorPos = this.activeElement.selectionStart;
+                    const wordStart = value.lastIndexOf(' ', cursorPos - 1) + 1;
+                    const newValue = value.substring(0, wordStart) + value.substring(cursorPos);
+                    this.activeElement.value = newValue;
+                    this.activeElement.setSelectionRange(wordStart, wordStart);
+                    this.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                break;
+            case 'delete_line':
+                if (this.activeElement) {
+                    const value = this.activeElement.value;
+                    const cursorPos = this.activeElement.selectionStart;
+                    const lineStart = value.lastIndexOf('\n', cursorPos - 1) + 1;
+                    const lineEnd = value.indexOf('\n', cursorPos);
+                    const end = lineEnd === -1 ? value.length : lineEnd;
+                    const newValue = value.substring(0, lineStart) + value.substring(end);
+                    this.activeElement.value = newValue;
+                    this.activeElement.setSelectionRange(lineStart, lineStart);
+                    this.activeElement.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                break;
+
+            // Special commands
+            case 'stop_listening':
+                this.stopRecognition();
+                break;
+            case 'pause':
+                this.stopRecognition();
+                break;
+            case 'resume':
+                this.startRecognition();
+                break;
+            case 'clear_transcript':
+                this.currentTranscript = '';
+                if (this.widget) {
+                    this.widget.clearTranscript();
+                }
+                break;
+            case 'save':
+                // Trigger save event
+                if (this.activeElement) {
+                    this.activeElement.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                break;
+            case 'submit':
+                // Find and submit the closest form
+                if (this.activeElement) {
+                    const form = this.activeElement.closest('form');
+                    if (form) {
+                        form.dispatchEvent(new Event('submit', { bubbles: true }));
                     }
                 }
-            },
-            'next field': () => this.focusNextField(),
-            'previous field': () => this.focusPreviousField()
-        };
-
-        const commandLower = command.toLowerCase();
-        for (const [cmd, action] of Object.entries(commandMap)) {
-            if (commandLower.includes(cmd)) {
-                action();
-                this.widget.showTranscript(`Command executed: ${cmd}`);
                 break;
-            }
+            case 'enter':
+                if (this.activeElement) {
+                    this.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+                }
+                break;
+            case 'tab':
+                if (this.activeElement) {
+                    this.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+                }
+                break;
+            case 'escape':
+                if (this.activeElement) {
+                    this.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+                }
+                break;
+            case 'space':
+                if (this.activeElement) {
+                    this.insertTextAtCursor(this.activeElement, ' ');
+                }
+                break;
+
+            // Formatting commands
+            case 'bold':
+                document.execCommand('bold');
+                break;
+            case 'italic':
+                document.execCommand('italic');
+                break;
+            case 'underline':
+                document.execCommand('underline');
+                break;
+            case 'uppercase':
+                if (this.activeElement) {
+                    const selection = window.getSelection();
+                    if (selection.toString()) {
+                        const range = selection.getRangeAt(0);
+                        const text = range.toString().toUpperCase();
+                        range.deleteContents();
+                        range.insertNode(document.createTextNode(text));
+                    }
+                }
+                break;
+            case 'lowercase':
+                if (this.activeElement) {
+                    const selection = window.getSelection();
+                    if (selection.toString()) {
+                        const range = selection.getRangeAt(0);
+                        const text = range.toString().toLowerCase();
+                        range.deleteContents();
+                        range.insertNode(document.createTextNode(text));
+                    }
+                }
+                break;
+            case 'capitalize_first':
+                if (this.activeElement) {
+                    const selection = window.getSelection();
+                    if (selection.toString()) {
+                        const range = selection.getRangeAt(0);
+                        const text = range.toString();
+                        const capitalized = text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+                        range.deleteContents();
+                        range.insertNode(document.createTextNode(capitalized));
+                    }
+                }
+                break;
         }
     }
 
@@ -290,9 +486,58 @@ class VoiceInputManager {
     }
 
     handleRecognitionError(event) {
-        console.error('Recognition error:', event.error);
-        this.widget.showError(`Recognition error: ${event.error}`);
-        this.sendMessageToPopup('VOICE_ERROR', { error: event.error });
+        console.error('Recognition error:', event);
+        
+        let errorMessage = 'Voice recognition error';
+        let shouldRetry = false;
+        
+        switch (event.error) {
+            case 'no-speech':
+                errorMessage = 'No speech detected';
+                shouldRetry = true;
+                break;
+            case 'audio-capture':
+                errorMessage = 'Microphone not available';
+                break;
+            case 'not-allowed':
+                errorMessage = 'Microphone permission denied';
+                break;
+            case 'network':
+                errorMessage = 'Network error';
+                shouldRetry = true;
+                break;
+            case 'aborted':
+                errorMessage = 'Recognition aborted';
+                break;
+            case 'service-not-allowed':
+                errorMessage = 'Speech recognition service not available';
+                break;
+            case 'bad-grammar':
+                errorMessage = 'Grammar error';
+                break;
+            case 'language-not-supported':
+                errorMessage = 'Language not supported';
+                break;
+            case 'max_retries_exceeded':
+                errorMessage = 'Failed to start after multiple attempts';
+                break;
+        }
+        
+        this.widget.showError(errorMessage);
+        
+        // Retry for certain errors
+        if (shouldRetry && this.settings.continuousMode) {
+            setTimeout(() => {
+                if (this.shouldRestart) {
+                    this.startRecognition();
+                }
+            }, 2000);
+        }
+        
+        chrome.runtime.sendMessage({
+            type: 'VOICE_ERROR',
+            error: { message: errorMessage }
+        });
     }
 
     insertText(text) {
@@ -417,38 +662,64 @@ class VoiceInputManager {
     }
 
     cleanup() {
-        // Stop recognition
-        if (this.recognition) {
-            this.recognition.stop();
-        }
-
-        // Remove event listeners
-        this.messageListeners.forEach((listener, type) => {
-            if (type === 'runtime') {
-                chrome.runtime.onMessage.removeListener(listener);
+        try {
+            // Stop recognition if active
+            if (this.recognition && this.isRecording) {
+                this.recognition.stop();
             }
-        });
 
-        this.pageListeners.forEach((listener, type) => {
-            document.removeEventListener(type, listener);
-        });
+            // Clean up event listeners
+            this.messageListeners.forEach((listener, type) => {
+                if (type === 'runtime') {
+                    chrome.runtime.onMessage.removeListener(listener);
+                } else {
+                    document.removeEventListener(type, listener, true);
+                }
+            });
+            this.messageListeners.clear();
 
-        // Destroy components
-        if (this.widget) {
-            this.widget.destroy();
+            this.pageListeners.forEach((listener, type) => {
+                document.removeEventListener(type, listener, true);
+            });
+            this.pageListeners.clear();
+
+            // Clean up widget
+            if (this.widget) {
+                this.widget.destroy();
+                this.widget = null;
+            }
+
+            // Clean up speech engine
+            if (this.speechEngine) {
+                this.speechEngine.cleanup();
+                this.speechEngine = null;
+            }
+
+            // Clean up performance optimizer
+            if (this.performanceOptimizer) {
+                this.performanceOptimizer.cleanup();
+                this.performanceOptimizer = null;
+            }
+
+            // Clear references
+            this.recognition = null;
+            this.activeElement = null;
+            this.currentTranscript = '';
+
+            console.log('Voice Input Manager cleaned up successfully');
+        } catch (error) {
+            console.error('Error during cleanup:', error);
         }
+    }
 
-        if (this.performanceOptimizer) {
-            this.performanceOptimizer.cleanup();
-        }
+    // Add window unload handler
+    setupUnloadHandler() {
+        const unloadHandler = () => {
+            this.cleanup();
+        };
 
-        // Clear references
-        this.recognition = null;
-        this.widget = null;
-        this.speechEngine = null;
-        this.performanceOptimizer = null;
-        this.messageListeners.clear();
-        this.pageListeners.clear();
+        window.addEventListener('unload', unloadHandler);
+        this.pageListeners.set('unload', unloadHandler);
     }
 }
 

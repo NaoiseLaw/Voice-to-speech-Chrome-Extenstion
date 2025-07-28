@@ -235,15 +235,35 @@ class BackgroundService {
 
     async handleVoiceResult(data, tabId) {
         try {
-            // Send result to popup
-            await chrome.runtime.sendMessage({
-                action: 'VOICE_RESULT',
+            if (!tabId) {
+                console.warn('No tab ID provided for voice result');
+                return;
+            }
+
+            // Send result directly to content script
+            await chrome.tabs.sendMessage(tabId, {
+                type: 'VOICE_RESULT',
                 data: {
                     text: data.text,
                     confidence: data.confidence,
                     timestamp: Date.now()
                 }
             });
+
+            // Also send to popup if it's open
+            try {
+                await chrome.runtime.sendMessage({
+                    type: 'VOICE_RESULT',
+                    data: {
+                        text: data.text,
+                        confidence: data.confidence,
+                        timestamp: Date.now()
+                    }
+                });
+            } catch (popupError) {
+                // Popup might not be open, which is fine
+                console.debug('Popup not available for voice result');
+            }
 
             this.analytics.track('voice_result_received', {
                 length: data.text.length,
@@ -253,19 +273,53 @@ class BackgroundService {
 
         } catch (error) {
             console.error('Failed to handle voice result:', error);
+            
+            // Try to send error to content script
+            if (tabId) {
+                try {
+                    await chrome.tabs.sendMessage(tabId, {
+                        type: 'VOICE_ERROR',
+                        data: {
+                            error: 'Failed to process voice result',
+                            details: error.message
+                        }
+                    });
+                } catch (sendError) {
+                    console.error('Failed to send error to content script:', sendError);
+                }
+            }
         }
     }
 
     async handleVoiceError(data, tabId) {
         try {
-            // Send error to popup
-            await chrome.runtime.sendMessage({
-                action: 'VOICE_ERROR',
+            if (!tabId) {
+                console.warn('No tab ID provided for voice error');
+                return;
+            }
+
+            // Send error directly to content script
+            await chrome.tabs.sendMessage(tabId, {
+                type: 'VOICE_ERROR',
                 data: {
                     error: data.error,
                     timestamp: Date.now()
                 }
             });
+
+            // Also send to popup if it's open
+            try {
+                await chrome.runtime.sendMessage({
+                    type: 'VOICE_ERROR',
+                    data: {
+                        error: data.error,
+                        timestamp: Date.now()
+                    }
+                });
+            } catch (popupError) {
+                // Popup might not be open, which is fine
+                console.debug('Popup not available for voice error');
+            }
 
             this.analytics.track('voice_error', {
                 error: data.error,

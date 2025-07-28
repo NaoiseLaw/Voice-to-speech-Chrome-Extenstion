@@ -257,72 +257,163 @@ class OptionsController {
     this.saveButton.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
   }
 
-  // Validate settings before saving
-  validateSettings(settings) {
-    const errors = [];
-    
-    if (!settings.language) {
-      errors.push('Language is required');
-    }
-    
-    if (settings.maxAlternatives < 1 || settings.maxAlternatives > 3) {
-      errors.push('Maximum alternatives must be between 1 and 3');
-    }
-    
-    if (settings.dataRetention < 0 || settings.dataRetention > 365) {
-      errors.push('Data retention must be between 0 and 365 days');
-    }
-    
-    return errors;
-  }
+    // Export/Import functionality
+    async exportSettings() {
+        try {
+            const settings = await chrome.storage.sync.get(null);
+            const exportData = {
+                version: chrome.runtime.getManifest().version,
+                timestamp: Date.now(),
+                settings: settings
+            };
 
-  // Export settings for backup
-  async exportSettings() {
-    try {
-      const settings = await chrome.storage.sync.get();
-      const dataStr = JSON.stringify(settings, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
-      
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(dataBlob);
-      link.download = `voice-input-settings-${new Date().toISOString().split('T')[0]}.json`;
-      link.click();
-      
-      URL.revokeObjectURL(link.href);
-    } catch (error) {
-      console.error('Failed to export settings:', error);
-      this.showStatus('Failed to export settings', 'error');
-    }
-  }
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `voice-input-settings-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
 
-  // Import settings from backup
-  async importSettings(file) {
-    try {
-      const text = await file.text();
-      const settings = JSON.parse(text);
-      
-      // Validate imported settings
-      const errors = this.validateSettings(settings);
-      if (errors.length > 0) {
-        throw new Error(`Invalid settings: ${errors.join(', ')}`);
-      }
-      
-      // Save imported settings
-      await chrome.storage.sync.set(settings);
-      this.settings = { ...this.defaultSettings, ...settings };
-      this.updateFormElements();
-      
-      await this.notifyTabsOfSettingsChange();
-      
-      this.showStatus('Settings imported successfully!', 'success');
-    } catch (error) {
-      console.error('Failed to import settings:', error);
-      this.showStatus('Failed to import settings: ' + error.message, 'error');
+            this.showStatus('Settings exported successfully', 'success');
+        } catch (error) {
+            console.error('Failed to export settings:', error);
+            this.showStatus('Failed to export settings', 'error');
+        }
     }
-  }
+
+    async importSettings() {
+        try {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            
+            input.onchange = async (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const importData = JSON.parse(e.target.result);
+                        
+                        // Validate import data
+                        if (!importData.settings || typeof importData.settings !== 'object') {
+                            throw new Error('Invalid settings file format');
+                        }
+
+                        // Validate settings before importing
+                        const validatedSettings = this.validateSettings(importData.settings);
+                        
+                        // Import settings
+                        await chrome.storage.sync.set(validatedSettings);
+                        
+                        // Reload settings
+                        await this.loadSettings();
+                        
+                        this.showStatus('Settings imported successfully', 'success');
+                    } catch (error) {
+                        console.error('Failed to import settings:', error);
+                        this.showStatus('Failed to import settings: Invalid file format', 'error');
+                    }
+                };
+                
+                reader.readAsText(file);
+            };
+            
+            input.click();
+        } catch (error) {
+            console.error('Failed to import settings:', error);
+            this.showStatus('Failed to import settings', 'error');
+        }
+    }
+
+    validateSettings(settings) {
+        // Use the validation function from utils
+        return window.Utils ? window.Utils.validateSettings(settings) : settings;
+    }
+
+    // Analytics dashboard
+    async loadAnalytics() {
+        try {
+            const analytics = await chrome.storage.local.get(['analytics', 'performance_metrics']);
+            this.displayAnalytics(analytics);
+        } catch (error) {
+            console.error('Failed to load analytics:', error);
+        }
+    }
+
+    displayAnalytics(data) {
+        const analyticsSection = document.getElementById('analyticsSection');
+        if (!analyticsSection) return;
+
+        const { analytics = [], performance_metrics = {} } = data;
+
+        // Calculate usage statistics
+        const stats = this.calculateStats(analytics);
+        
+        // Update analytics display
+        analyticsSection.innerHTML = `
+            <div class="analytics-grid">
+                <div class="stat-card">
+                    <h3>Total Sessions</h3>
+                    <p class="stat-number">${stats.totalSessions}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Words Transcribed</h3>
+                    <p class="stat-number">${stats.totalWords}</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Accuracy Rate</h3>
+                    <p class="stat-number">${stats.accuracyRate}%</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Avg Session Time</h3>
+                    <p class="stat-number">${stats.avgSessionTime}s</p>
+                </div>
+            </div>
+            <div class="performance-metrics">
+                <h3>Performance Metrics</h3>
+                <div class="metric-item">
+                    <span>Memory Usage:</span>
+                    <span>${performance_metrics.memory || 'N/A'}</span>
+                </div>
+                <div class="metric-item">
+                    <span>Avg Response Time:</span>
+                    <span>${performance_metrics.avgResponseTime || 'N/A'}ms</span>
+                </div>
+            </div>
+        `;
+    }
+
+    calculateStats(analytics) {
+        const sessions = analytics.filter(event => event.event === 'recording_started');
+        const results = analytics.filter(event => event.event === 'voice_result_received');
+        const errors = analytics.filter(event => event.event === 'voice_error');
+
+        const totalSessions = sessions.length;
+        const totalWords = results.reduce((sum, event) => sum + (event.properties?.length || 0), 0);
+        const accuracyRate = totalSessions > 0 ? Math.round(((totalSessions - errors.length) / totalSessions) * 100) : 0;
+        const avgSessionTime = sessions.length > 0 ? Math.round(sessions.reduce((sum, session) => sum + (session.duration || 0), 0) / sessions.length) : 0;
+
+        return {
+            totalSessions,
+            totalWords,
+            accuracyRate,
+            avgSessionTime
+        };
+    }
 }
 
 // Initialize options when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   const options = new OptionsController();
+  // Add event listeners
+  document.getElementById('saveButton').addEventListener('click', () => options.saveSettings());
+  document.getElementById('resetButton').addEventListener('click', () => options.resetToDefaults());
+  document.getElementById('exportButton').addEventListener('click', () => options.exportSettings());
+  document.getElementById('importButton').addEventListener('click', () => options.importSettings());
 }); 

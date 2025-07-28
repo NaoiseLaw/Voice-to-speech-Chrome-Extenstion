@@ -518,50 +518,245 @@ body {
     border: 0;
 }
 
-/* Mobile Responsive */
+/* Mobile responsive improvements */
 @media (max-width: 640px) {
+    :root {
+        --popup-width: 100vw;
+        --popup-height: 100vh;
+    }
+    
     body {
         width: 100vw;
         height: 100vh;
+        border-radius: 0;
+    }
+    
+    .popup-container {
+        border-radius: 0;
+        position: fixed;
+        bottom: 0;
+        transform: translateY(calc(100% - 200px));
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .popup-container.expanded {
+        transform: translateY(0);
     }
     
     .swipe-indicator {
         display: block;
+        width: 48px;
+        height: 4px;
+        background: var(--gray-300);
+        border-radius: 2px;
+        margin: 8px auto;
+        cursor: grab;
+        transition: background-color 0.2s ease;
+    }
+    
+    .swipe-indicator:active {
+        cursor: grabbing;
+        background: var(--gray-400);
     }
     
     .voice-btn {
-        width: 100px;
-        height: 100px;
-    }
-    
-    .actions {
-        flex-direction: column;
+        width: 140px;
+        height: 140px;
+        border-radius: 70px;
+        min-height: 60px; /* Ensure minimum touch target size */
     }
     
     .action-btn {
-        padding: var(--spacing-lg);
-        font-size: 14px;
+        min-height: 48px;
+        font-size: 16px;
+        padding: 12px 16px;
+        border-radius: 12px;
+    }
+    
+    .setting-select {
+        min-height: 48px;
+        font-size: 16px;
+        padding: 12px 16px;
+    }
+    
+    .checkbox-label {
+        min-height: 48px;
+        padding: 8px 0;
+        font-size: 16px;
+    }
+    
+    .checkmark {
+        width: 24px;
+        height: 24px;
+        border-width: 2px;
+    }
+    
+    .settings-btn,
+    .help-btn {
+        min-height: 48px;
+        padding: 12px 16px;
+        font-size: 16px;
+    }
+    
+    .main {
+        padding: 20px 16px 16px;
+    }
+    
+    .header {
+        padding: 16px 20px;
+    }
+    
+    .footer {
+        padding: 16px 20px;
+    }
+    
+    /* Improve touch targets */
+    .voice-btn,
+    .action-btn,
+    .setting-select,
+    .settings-btn,
+    .help-btn {
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* Add haptic feedback simulation */
+    .voice-btn:active,
+    .action-btn:active,
+    .settings-btn:active,
+    .help-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s ease;
     }
 }
 
-/* Landscape Mobile */
+/* Landscape mobile optimization */
 @media (orientation: landscape) and (max-height: 500px) {
+    .popup-container {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: auto 1fr auto;
+        height: 100vh;
+    }
+    
+    .header {
+        grid-column: 1 / -1;
+        padding: 12px 16px;
+    }
+    
     .main {
-        gap: var(--spacing-md);
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        padding: 16px;
+        overflow-x: auto;
     }
     
     .voice-section {
-        gap: var(--spacing-md);
+        flex-shrink: 0;
+        margin-bottom: 0;
     }
     
     .voice-btn {
         width: 80px;
         height: 80px;
+        border-radius: 40px;
     }
     
-    .mic-icon {
-        width: 32px;
-        height: 32px;
+    .actions {
+        flex-direction: row;
+        gap: 8px;
+        margin-bottom: 0;
+    }
+    
+    .action-btn {
+        min-width: 80px;
+        min-height: 40px;
+        font-size: 14px;
+        padding: 8px 12px;
+    }
+    
+    .settings {
+        flex: 1;
+        margin-bottom: 0;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .footer {
+        grid-column: 1 / -1;
+        padding: 12px 16px;
+    }
+}
+
+/* Tablet optimization */
+@media (min-width: 641px) and (max-width: 1024px) {
+    :root {
+        --popup-width: 400px;
+        --popup-height: 500px;
+    }
+    
+    .voice-btn {
+        width: 100px;
+        height: 100px;
+        border-radius: 50px;
+    }
+    
+    .action-btn {
+        min-height: 44px;
+        font-size: 15px;
+    }
+    
+    .main {
+        padding: 20px 18px 18px;
+    }
+}
+
+/* Large screen optimization */
+@media (min-width: 1025px) {
+    :root {
+        --popup-width: 360px;
+        --popup-height: 480px;
+    }
+    
+    .voice-btn {
+        width: 110px;
+        height: 110px;
+        border-radius: 55px;
+    }
+    
+    .action-btn {
+        min-height: 42px;
+        font-size: 14px;
+    }
+}
+
+/* Touch device specific improvements */
+@media (hover: none) and (pointer: coarse) {
+    .voice-btn:hover,
+    .action-btn:hover,
+    .settings-btn:hover,
+    .help-btn:hover {
+        transform: none;
+    }
+    
+    .voice-btn:active,
+    .action-btn:active,
+    .settings-btn:active,
+    .help-btn:active {
+        transform: scale(0.95);
+    }
+    
+    /* Increase touch target sizes */
+    .setting-select,
+    .checkbox-label {
+        min-height: 44px;
+    }
+    
+    .checkmark {
+        width: 20px;
+        height: 20px;
     }
 }
 
@@ -594,38 +789,240 @@ body {
 /* Dark Mode Support */
 @media (prefers-color-scheme: dark) {
     :root {
-        --secondary-color: #1e293b;
-        --text-primary: #f1f5f9;
-        --text-secondary: #cbd5e1;
-        --text-muted: #64748b;
-        --border-color: #334155;
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --primary-light: #818cf8;
+        --secondary: #8b5cf6;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --error: #ef4444;
+        
+        /* Dark theme colors */
+        --bg-primary: #1f2937;
+        --bg-secondary: #374151;
+        --bg-tertiary: #4b5563;
+        --text-primary: #f9fafb;
+        --text-secondary: #d1d5db;
+        --text-muted: #9ca3af;
+        --border-color: #4b5563;
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        
+        /* Component colors */
+        --input-bg: #374151;
+        --input-border: #4b5563;
+        --input-text: #f9fafb;
+        --button-bg: #374151;
+        --button-hover: #4b5563;
+        --card-bg: #374151;
+        --card-border: #4b5563;
     }
     
     body {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        background: var(--bg-primary);
+        color: var(--text-primary);
     }
     
     .popup-container {
-        background: #1e293b;
+        background: var(--bg-primary);
     }
     
-    .transcript {
-        background: #334155;
-        color: #f1f5f9;
+    .header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    }
+    
+    .voice-btn {
+        background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.25), 0 10px 15px -3px var(--shadow-color);
+    }
+    
+    .voice-btn:hover {
+        box-shadow: 0 6px 25px rgba(16, 185, 129, 0.35), 0 20px 25px -5px var(--shadow-color);
+    }
+    
+    .voice-btn.recording {
+        background: linear-gradient(135deg, var(--error) 0%, #dc2626 100%);
+        box-shadow: 0 4px 20px rgba(239, 68, 68, 0.25), 0 10px 15px -3px var(--shadow-color);
     }
     
     .action-btn {
-        background: #334155;
-        color: #cbd5e1;
+        background: var(--button-bg);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+        box-shadow: 0 1px 3px var(--shadow-color);
+    }
+    
+    .action-btn:hover:not(:disabled) {
+        background: var(--button-hover);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .action-btn.enabled {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+    
+    .settings {
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
     }
     
     .setting-select {
-        background: #334155;
-        color: #f1f5f9;
+        background: var(--input-bg);
+        color: var(--input-text);
+        border-color: var(--input-border);
+    }
+    
+    .setting-select:hover {
+        border-color: var(--primary);
+    }
+    
+    .setting-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    .checkbox-label {
+        color: var(--text-primary);
+    }
+    
+    .checkmark {
+        border-color: var(--border-color);
+        background: var(--input-bg);
+    }
+    
+    .checkbox-label:hover .checkmark {
+        border-color: var(--primary);
+    }
+    
+    .checkbox-label input:checked ~ .checkmark {
+        background: var(--primary);
+        border-color: var(--primary);
+    }
+    
+    .footer {
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
     }
     
     .settings-btn {
-        background: #334155;
-        color: #cbd5e1;
+        background: var(--button-bg);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+    
+    .settings-btn:hover {
+        background: var(--button-hover);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .help-btn {
+        background: var(--button-bg);
+        color: var(--text-secondary);
+        border-color: var(--border-color);
+    }
+    
+    .help-btn:hover {
+        background: var(--button-hover);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+    
+    .transcript {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        border-color: var(--border-color);
+    }
+    
+    .info-text {
+        color: var(--text-secondary);
+    }
+    
+    .version {
+        color: var(--text-muted);
+    }
+    
+    /* Scrollbar styling for dark mode */
+    .main::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+    
+    .main::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+    }
+    
+    .main::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+    
+    .transcript::-webkit-scrollbar-track {
+        background: var(--bg-tertiary);
+    }
+    
+    .transcript::-webkit-scrollbar-thumb {
+        background: var(--border-color);
+    }
+    
+    .transcript::-webkit-scrollbar-thumb:hover {
+        background: var(--text-muted);
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    :root {
+        --primary: #5b21b6;
+        --primary-dark: #4c1d95;
+        --success: #059669;
+        --error: #dc2626;
+        --border-color: #000000;
+        --shadow-color: rgba(0, 0, 0, 0.5);
+    }
+    
+    .voice-btn {
+        border: 2px solid white;
+    }
+    
+    .action-btn,
+    .setting-select,
+    .checkmark,
+    .settings-btn,
+    .help-btn {
+        border-width: 2px;
+    }
+    
+    .transcript {
+        border-width: 2px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .voice-btn:hover,
+    .action-btn:hover,
+    .settings-btn:hover,
+    .help-btn:hover {
+        transform: none !important;
+    }
+    
+    .ripple {
+        animation: none !important;
+    }
+    
+    .status-dot {
+        animation: none !important;
+    }
+    
+    .voice-btn.recording {
+        animation: none !important;
     }
 } 

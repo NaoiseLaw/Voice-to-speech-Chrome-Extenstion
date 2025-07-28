@@ -1,4 +1,4 @@
-# Voice Input Extension
+# Voice Input Pro
 
 A powerful Chrome extension that enables voice-to-text input across all web pages, providing seamless dictation capabilities with high accuracy and privacy-focused design.
 
@@ -10,8 +10,15 @@ A powerful Chrome extension that enables voice-to-text input across all web page
 - **Multi-language Support**: Supports 15+ languages including English, Spanish, French, German, and more
 - **Smart Input Detection**: Automatically detects text fields, textareas, and contentEditable elements
 - **Real-time Feedback**: Shows interim results and listening status
-- **Customizable Settings**: Extensive configuration options for power users
-- **Modern UI**: Beautiful, responsive interface with smooth animations
+- **Floating Widget**: Draggable, resizable UI that appears near input fields
+- **Advanced Voice Commands**: 50+ voice commands for editing, navigation, and formatting
+- **Analytics Dashboard**: Usage statistics and performance metrics
+- **Export/Import Settings**: Backup and restore your configuration
+- **Dark Mode Support**: Automatic dark mode with system preference detection
+- **Mobile Responsive**: Optimized for touch devices and mobile browsers
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Performance Optimized**: Memory management and performance monitoring
+- **Error Recovery**: Automatic retry mechanisms and graceful error handling
 
 ## 🚀 Quick Start
 
