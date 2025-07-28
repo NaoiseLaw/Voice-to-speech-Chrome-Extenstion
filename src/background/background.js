@@ -1,282 +1,392 @@
-// Service Worker for Voice Input Extension
-// Handles coordination between popup, content scripts, and permission management
-
+// Enhanced Background Service Worker
 class BackgroundService {
-  constructor() {
-    this.isListening = false;
-    this.currentTabId = null;
-    this.permissionGranted = false;
-    this.init();
-  }
-
-  init() {
-    // Listen for messages from popup and content scripts
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-      this.handleMessage(message, sender, sendResponse);
-      return true; // Keep message channel open for async responses
-    });
-
-    // Handle extension installation
-    chrome.runtime.onInstalled.addListener((details) => {
-      this.handleInstallation(details);
-    });
-
-    // Handle tab updates
-    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-      this.handleTabUpdate(tabId, changeInfo, tab);
-    });
-
-    // Handle tab activation
-    chrome.tabs.onActivated.addListener((activeInfo) => {
-      this.handleTabActivation(activeInfo);
-    });
-
-    console.log('Voice Input Extension background service initialized');
-  }
-
-  async handleMessage(message, sender, sendResponse) {
-    try {
-      switch (message.type) {
-        case 'START_VOICE_INPUT':
-          try {
-            await this.startVoiceInput(sender.tab?.id);
-            sendResponse({ success: true });
-          } catch (error) {
-            console.error('Failed to start voice input:', error);
-            sendResponse({ success: false, error: error.message });
-          }
-          break;
-
-        case 'STOP_VOICE_INPUT':
-          try {
-            await this.stopVoiceInput();
-            sendResponse({ success: true });
-          } catch (error) {
-            console.error('Failed to stop voice input:', error);
-            sendResponse({ success: false, error: error.message });
-          }
-          break;
-
-        case 'CHECK_PERMISSION':
-          const hasPermission = await this.checkMicrophonePermission();
-          sendResponse({ hasPermission });
-          break;
-
-        case 'REQUEST_PERMISSION':
-          const granted = await this.requestMicrophonePermission();
-          sendResponse({ granted });
-          break;
-
-        case 'GET_STATUS':
-          sendResponse({
-            isListening: this.isListening,
-            permissionGranted: this.permissionGranted,
-            currentTabId: this.currentTabId
-          });
-          break;
-
-        case 'VOICE_RESULT':
-          await this.handleVoiceResult(message.data, sender.tab?.id);
-          sendResponse({ success: true });
-          break;
-
-        case 'VOICE_ERROR':
-          await this.handleVoiceError(message.error, sender.tab?.id);
-          sendResponse({ success: true });
-          break;
-
-        default:
-          console.warn('Unknown message type:', message.type);
-          sendResponse({ success: false, error: 'Unknown message type' });
-      }
-    } catch (error) {
-      console.error('Error handling message:', error);
-      sendResponse({ success: false, error: error.message });
-    }
-  }
-
-  async startVoiceInput(tabId) {
-    if (this.isListening) {
-      console.log('Voice input already active');
-      return;
+    constructor() {
+        this.sessions = new Map();
+        this.activeTab = null;
+        this.analytics = new AnalyticsCollector();
     }
 
-    try {
-      // Get the active tab if not provided
-      if (!tabId) {
-        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (tabs.length === 0) {
-          throw new Error('No active tab found');
+    init() {
+        // Set up message listeners
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            this.handleMessage(message, sender, sendResponse);
+        });
+
+        // Set up command listeners
+        chrome.commands.onCommand.addListener((command) => {
+            this.handleCommand(command);
+        });
+
+        // Set up tab listeners
+        chrome.tabs.onActivated.addListener((activeInfo) => {
+            this.handleTabActivation(activeInfo);
+        });
+
+        chrome.tabs.onRemoved.addListener((tabId) => {
+            this.sessions.delete(tabId);
+        });
+
+        // Handle installation
+        chrome.runtime.onInstalled.addListener((details) => {
+            this.handleInstallation(details);
+        });
+
+        console.log('Background service initialized');
+    }
+
+    async handleMessage(message, sender, sendResponse) {
+        try {
+            switch (message.action) {
+                case 'START_VOICE_INPUT':
+                    await this.startVoiceInput(message.data);
+                    sendResponse({ success: true });
+                    break;
+                    
+                case 'STOP_VOICE_INPUT':
+                    await this.stopVoiceInput();
+                    sendResponse({ success: true });
+                    break;
+                    
+                case 'INSERT_TEXT':
+                    await this.insertText(message.data.text);
+                    sendResponse({ success: true });
+                    break;
+                    
+                case 'CHECK_PERMISSION':
+                    const hasPermission = await this.checkMicrophonePermission();
+                    sendResponse({ hasPermission });
+                    break;
+                    
+                case 'REQUEST_PERMISSION':
+                    const granted = await this.requestMicrophonePermission();
+                    sendResponse({ granted });
+                    break;
+                    
+                case 'GET_STATUS':
+                    const status = this.getStatus();
+                    sendResponse(status);
+                    break;
+                    
+                case 'VOICE_RESULT':
+                    await this.handleVoiceResult(message.data, sender.tab?.id);
+                    sendResponse({ success: true });
+                    break;
+                    
+                case 'VOICE_ERROR':
+                    await this.handleVoiceError(message.data, sender.tab?.id);
+                    sendResponse({ success: true });
+                    break;
+                    
+                case 'OPEN_SETTINGS':
+                    chrome.runtime.openOptionsPage();
+                    sendResponse({ success: true });
+                    break;
+                    
+                default:
+                    sendResponse({ success: false, error: 'Unknown action' });
+            }
+        } catch (error) {
+            console.error('Background message handling error:', error);
+            sendResponse({ success: false, error: error.message });
         }
-        tabId = tabs[0].id;
-      }
-
-      this.currentTabId = tabId;
-      this.isListening = true;
-
-      // Send message to content script to start recognition
-      await chrome.tabs.sendMessage(tabId, {
-        type: 'START_VOICE_RECOGNITION'
-      });
-
-      console.log('Voice input started successfully');
-    } catch (error) {
-      console.error('Failed to start voice input:', error);
-      this.isListening = false;
-      this.currentTabId = null;
-      throw error;
-    }
-  }
-
-  async stopVoiceInput() {
-    if (!this.isListening) {
-      return;
     }
 
-    this.isListening = false;
+    async startVoiceInput(data = {}) {
+        try {
+            const tab = this.activeTab || await this.getActiveTab();
+            if (!tab) {
+                throw new Error('No active tab found');
+            }
 
-    if (this.currentTabId) {
-      try {
-        await chrome.tabs.sendMessage(this.currentTabId, {
-          type: 'STOP_VOICE_RECOGNITION'
-        });
-      } catch (error) {
-        console.error('Failed to stop voice input:', error);
-      }
+            const message = {
+                action: 'START_VOICE_RECOGNITION',
+                data: {
+                    language: data.language || 'en-US',
+                    continuous: data.continuous || false
+                }
+            };
+
+            await chrome.tabs.sendMessage(tab.id, message);
+            
+            // Track session
+            this.sessions.set(tab.id, {
+                startTime: Date.now(),
+                language: data.language,
+                continuous: data.continuous
+            });
+
+            this.analytics.track('voice_session_started', {
+                language: data.language,
+                continuous: data.continuous,
+                tabId: tab.id
+            });
+
+        } catch (error) {
+            console.error('Failed to start voice input:', error);
+            throw error;
+        }
     }
 
-    this.currentTabId = null;
-  }
+    async stopVoiceInput() {
+        try {
+            const tab = this.activeTab || await this.getActiveTab();
+            if (!tab) {
+                throw new Error('No active tab found');
+            }
 
-  async checkMicrophonePermission() {
-    // Chrome extensions don't have direct microphone permission
-    // We'll check if the content script can access microphone
-    try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tabs[0]) {
-        const result = await chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          function: () => {
-            return navigator.permissions.query({ name: 'microphone' })
-              .then(result => result.state === 'granted')
-              .catch(() => false);
-          }
-        });
-        this.permissionGranted = result[0]?.result || false;
-        return this.permissionGranted;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error checking microphone permission:', error);
-      return false;
+            await chrome.tabs.sendMessage(tab.id, {
+                action: 'STOP_VOICE_RECOGNITION'
+            });
+
+            // End session tracking
+            const session = this.sessions.get(tab.id);
+            if (session) {
+                const duration = Date.now() - session.startTime;
+                this.analytics.track('voice_session_ended', {
+                    duration,
+                    language: session.language,
+                    continuous: session.continuous,
+                    tabId: tab.id
+                });
+                this.sessions.delete(tab.id);
+            }
+
+        } catch (error) {
+            console.error('Failed to stop voice input:', error);
+            throw error;
+        }
     }
-  }
 
-  async requestMicrophonePermission() {
-    // Request microphone permission through content script
-    try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      if (tabs[0]) {
-        const result = await chrome.scripting.executeScript({
-          target: { tabId: tabs[0].id },
-          function: () => {
-            return navigator.mediaDevices.getUserMedia({ audio: true })
-              .then(stream => {
-                stream.getTracks().forEach(track => track.stop());
-                return true;
-              })
-              .catch(() => false);
-          }
-        });
-        this.permissionGranted = result[0]?.result || false;
-        return this.permissionGranted;
-      }
-      return false;
-    } catch (error) {
-      console.error('Error requesting microphone permission:', error);
-      return false;
+    async insertText(text) {
+        try {
+            const tab = this.activeTab || await this.getActiveTab();
+            if (!tab) {
+                throw new Error('No active tab found');
+            }
+
+            await chrome.tabs.sendMessage(tab.id, {
+                action: 'INSERT_TEXT',
+                data: { text }
+            });
+
+            this.analytics.track('text_inserted', {
+                length: text.length,
+                tabId: tab.id
+            });
+
+        } catch (error) {
+            console.error('Failed to insert text:', error);
+            throw error;
+        }
     }
-  }
 
-  async handleVoiceResult(data, tabId) {
-    if (!tabId) return;
+    async checkMicrophonePermission() {
+        try {
+            const tab = await this.getActiveTab();
+            if (!tab) return false;
 
-    try {
-      await chrome.tabs.sendMessage(tabId, {
-        type: 'VOICE_RESULT',
-        data: data
-      });
-    } catch (error) {
-      console.error('Failed to handle voice result:', error);
-      // Try to notify popup of the error
-      try {
-        await chrome.runtime.sendMessage({
-          type: 'VOICE_ERROR',
-          error: {
-            message: 'Failed to process voice result',
-            timestamp: Date.now()
-          }
-        });
-      } catch (sendError) {
-        console.error('Failed to send error to popup:', sendError);
-      }
+            const results = await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: () => {
+                    return navigator.permissions.query({ name: 'microphone' })
+                        .then(permission => permission.state === 'granted')
+                        .catch(() => false);
+                }
+            });
+
+            return results[0]?.result || false;
+        } catch (error) {
+            console.error('Failed to check microphone permission:', error);
+            return false;
+        }
     }
-  }
 
-  async handleVoiceError(error, tabId) {
-    if (!tabId) return;
+    async requestMicrophonePermission() {
+        try {
+            const tab = await this.getActiveTab();
+            if (!tab) return false;
 
-    try {
-      await chrome.tabs.sendMessage(tabId, {
-        type: 'VOICE_ERROR',
-        error: error
-      });
-    } catch (err) {
-      console.error('Failed to handle voice error:', err);
-      // Try to notify popup of the error
-      try {
-        await chrome.runtime.sendMessage({
-          type: 'VOICE_ERROR',
-          error: {
-            message: 'Failed to process voice error',
-            timestamp: Date.now()
-          }
-        });
-      } catch (sendError) {
-        console.error('Failed to send error to popup:', sendError);
-      }
+            const results = await chrome.scripting.executeScript({
+                target: { tabId: tab.id },
+                func: () => {
+                    return navigator.mediaDevices.getUserMedia({ audio: true })
+                        .then(stream => {
+                            stream.getTracks().forEach(track => track.stop());
+                            return true;
+                        })
+                        .catch(() => false);
+                }
+            });
+
+            return results[0]?.result || false;
+        } catch (error) {
+            console.error('Failed to request microphone permission:', error);
+            return false;
+        }
     }
-  }
 
-  handleInstallation(details) {
-    if (details.reason === 'install') {
-      console.log('Voice Input Extension installed');
-      // Set default settings
-      chrome.storage.sync.set({
-        voiceEnabled: true,
-        language: 'en-US',
-        continuousMode: false,
-        showInterimResults: true
-      });
-    } else if (details.reason === 'update') {
-      console.log('Voice Input Extension updated');
+    getStatus() {
+        return {
+            isRecording: this.sessions.size > 0,
+            activeSessions: this.sessions.size,
+            activeTab: this.activeTab
+        };
     }
-  }
 
-  handleTabUpdate(tabId, changeInfo, tab) {
-    if (changeInfo.status === 'complete' && tab.url) {
-      // Reset listening state when navigating to a new page
-      if (this.currentTabId === tabId && this.isListening) {
-        this.stopVoiceInput();
-      }
+    async handleVoiceResult(data, tabId) {
+        try {
+            // Send result to popup
+            await chrome.runtime.sendMessage({
+                action: 'VOICE_RESULT',
+                data: {
+                    text: data.text,
+                    confidence: data.confidence,
+                    timestamp: Date.now()
+                }
+            });
+
+            this.analytics.track('voice_result_received', {
+                length: data.text.length,
+                confidence: data.confidence,
+                tabId
+            });
+
+        } catch (error) {
+            console.error('Failed to handle voice result:', error);
+        }
     }
-  }
 
-  handleTabActivation(activeInfo) {
-    // Update current tab when switching tabs
-    this.currentTabId = activeInfo.tabId;
-  }
+    async handleVoiceError(data, tabId) {
+        try {
+            // Send error to popup
+            await chrome.runtime.sendMessage({
+                action: 'VOICE_ERROR',
+                data: {
+                    error: data.error,
+                    timestamp: Date.now()
+                }
+            });
+
+            this.analytics.track('voice_error', {
+                error: data.error,
+                tabId
+            });
+
+        } catch (error) {
+            console.error('Failed to handle voice error:', error);
+        }
+    }
+
+    handleInstallation(details) {
+        if (details.reason === 'install') {
+            // Set default settings
+            chrome.storage.sync.set({
+                language: 'en-US',
+                autoInsert: false,
+                continuousMode: false,
+                enableCommands: true,
+                enablePunctuation: true,
+                noiseSuppression: true
+            });
+
+            this.analytics.track('extension_installed', {
+                version: chrome.runtime.getManifest().version
+            });
+        }
+    }
+
+    handleTabUpdate(tabId, changeInfo, tab) {
+        // Reset listening state when navigating to a new page
+        if (changeInfo.status === 'loading' && this.sessions.has(tabId)) {
+            this.sessions.delete(tabId);
+        }
+    }
+
+    handleTabActivation(activeInfo) {
+        this.activeTab = {
+            id: activeInfo.tabId,
+            windowId: activeInfo.windowId
+        };
+    }
+
+    handleCommand(command) {
+        switch (command) {
+            case 'toggle-recording':
+                this.toggleRecording();
+                break;
+            case 'stop-recording':
+                this.stopVoiceInput();
+                break;
+        }
+    }
+
+    async toggleRecording() {
+        const status = this.getStatus();
+        if (status.isRecording) {
+            await this.stopVoiceInput();
+        } else {
+            await this.startVoiceInput();
+        }
+    }
+
+    async getActiveTab() {
+        try {
+            const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+            return tabs[0] || null;
+        } catch (error) {
+            console.error('Failed to get active tab:', error);
+            return null;
+        }
+    }
 }
 
-// Initialize the background service
-const backgroundService = new BackgroundService(); 
+// Analytics data collector
+class AnalyticsCollector {
+    constructor() {
+        this.events = [];
+        this.maxEvents = 1000;
+    }
+
+    track(event, data = {}) {
+        const eventData = {
+            event,
+            timestamp: Date.now(),
+            ...data
+        };
+
+        this.events.push(eventData);
+
+        // Keep only the latest events
+        if (this.events.length > this.maxEvents) {
+            this.events = this.events.slice(-this.maxEvents);
+        }
+
+        // Store in chrome.storage for persistence
+        chrome.storage.local.set({ analytics: this.events });
+
+        console.log('Analytics:', eventData);
+    }
+
+    getEvents() {
+        return this.events;
+    }
+
+    clearEvents() {
+        this.events = [];
+        chrome.storage.local.remove('analytics');
+    }
+
+    async loadEvents() {
+        try {
+            const result = await chrome.storage.local.get('analytics');
+            this.events = result.analytics || [];
+        } catch (error) {
+            console.error('Failed to load analytics:', error);
+            this.events = [];
+        }
+    }
+}
+
+// Initialize background service
+const backgroundService = new BackgroundService();
+backgroundService.init(); 

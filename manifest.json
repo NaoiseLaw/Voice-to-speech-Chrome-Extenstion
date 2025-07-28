@@ -1,12 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Voice Input Extension",
-  "description": "Enable voice-to-text input across web pages with high accuracy and privacy",
-  "version": "1.0.0",
+  "name": "Voice Input Pro",
+  "description": "Professional voice-to-text input with advanced features",
+  "version": "2.0.0",
   "permissions": [
     "activeTab",
     "storage",
-    "scripting"
+    "scripting",
+    "clipboardWrite"
   ],
   "host_permissions": [
     "https://*/*",
@@ -18,7 +19,12 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["src/content/content.js"],
+      "js": [
+        "src/lib/utils.js",
+        "src/content/floating-widget.js",
+        "src/content/speech-engine.js",
+        "src/content/content.js"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -26,14 +32,15 @@
     {
       "resources": [
         "src/permission/permission.html",
-        "src/permission/permission.js"
+        "src/permission/permission.js",
+        "assets/icons/*.svg"
       ],
       "matches": ["<all_urls>"]
     }
   ],
   "action": {
     "default_popup": "src/popup/popup.html",
-    "default_title": "Voice Input",
+    "default_title": "Voice Input Pro",
     "default_icon": {
       "16": "assets/icon16.png",
       "32": "assets/icon32.png",
@@ -48,6 +55,22 @@
     "128": "assets/icon128.png"
   },
   "options_page": "src/options/options.html",
+  "commands": {
+    "toggle-recording": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+V",
+        "mac": "Command+Shift+V"
+      },
+      "description": "Toggle voice recording"
+    },
+    "stop-recording": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "Stop voice recording"
+    }
+  },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   }

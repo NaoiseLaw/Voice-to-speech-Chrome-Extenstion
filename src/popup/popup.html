@@ -3,54 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Voice Input Extension</title>
+    <title>Voice Input Pro</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
+    <div class="popup-container">
+        <div class="swipe-indicator" aria-hidden="true"></div>
+        
         <div class="header">
             <div class="logo">
-                <span class="logo-icon">🎤</span>
-                <h1>Voice Input</h1>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C13.1 2 14 2.9 14 4V8C14 9.1 13.1 10 12 10C10.9 10 10 9.1 10 8V4C10 2.9 10.9 2 12 2Z"/>
+                    <path d="M19 10V12C19 15.87 15.87 19 12 19C8.13 19 5 15.87 5 12V10H7V12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12V10H19Z"/>
+                    <path d="M12 20V22"/>
+                </svg>
+                <span>Voice Input Pro</span>
             </div>
-            <div class="status" id="status">
-                <span class="status-dot" id="statusDot"></span>
-                <span class="status-text" id="statusText">Ready</span>
+            <div class="status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Ready</span>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="main">
-            <!-- Voice Button -->
+        <div class="main" id="mainContent">
             <div class="voice-section">
-                <button class="voice-btn" id="voiceBtn">
-                    <span class="mic-icon" id="micIcon">🎤</span>
-                    <span class="btn-text" id="btnText">Start Recording</span>
+                <button class="voice-btn" id="voiceBtn" aria-label="Start voice recording">
+                    <span class="ripple-container"></span>
+                    <svg class="mic-icon" id="micIcon" width="48" height="48" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 2C13.1 2 14 2.9 14 4V8C14 9.1 13.1 10 12 10C10.9 10 10 9.1 10 8V4C10 2.9 10.9 2 12 2Z"/>
+                        <path d="M19 10V12C19 15.87 15.87 19 12 19C8.13 19 5 15.87 5 12V10H7V12C7 14.76 9.24 17 12 17C14.76 17 17 14.76 17 12V10H19Z"/>
+                    </svg>
+                    <canvas class="voice-visualizer" id="voiceVisualizer" width="120" height="120"></canvas>
+                    <span class="btn-text" id="btnText">Hold to Talk</span>
                 </button>
                 
                 <div class="voice-info" id="voiceInfo">
-                    <p class="info-text">Click the button above to start voice recording</p>
+                    <div class="info-text" id="infoText">Click and hold to start recording</div>
                     <div class="transcript" id="transcript"></div>
                 </div>
             </div>
 
-            <!-- Quick Actions -->
-            <div class="actions">
-                <button class="action-btn" id="insertBtn" disabled>
-                    <span class="action-icon">📝</span>
-                    Insert Text
+            <div class="actions" role="group" aria-label="Quick actions">
+                <button class="action-btn" id="insertBtn" disabled aria-label="Insert transcribed text">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+                    </svg>
+                    Insert
                 </button>
-                <button class="action-btn" id="copyBtn" disabled>
-                    <span class="action-icon">📋</span>
-                    Copy Text
+                <button class="action-btn" id="copyBtn" disabled aria-label="Copy transcribed text">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M16 1H4C3 1 2 2 2 3V17H4V3H16V1ZM19 5H8C7 5 6 6 6 7V21C6 22 7 23 8 23H19C20 23 21 22 21 21V7C21 6 20 5 19 5ZM19 21H8V7H19V21Z"/>
+                    </svg>
+                    Copy
+                </button>
+                <button class="action-btn" id="clearBtn" disabled aria-label="Clear transcribed text">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z"/>
+                    </svg>
+                    Clear
                 </button>
             </div>
 
-            <!-- Settings -->
             <div class="settings">
                 <div class="setting-row">
-                    <label for="language">Language:</label>
+                    <label for="language" class="setting-label">Language:</label>
                     <select id="language" class="setting-select">
                         <option value="en-US">English (US)</option>
                         <option value="en-GB">English (UK)</option>
@@ -58,10 +74,10 @@
                         <option value="fr-FR">French</option>
                         <option value="de-DE">German</option>
                         <option value="it-IT">Italian</option>
-                        <option value="pt-BR">Portuguese</option>
+                        <option value="pt-BR">Portuguese (BR)</option>
                         <option value="ja-JP">Japanese</option>
                         <option value="ko-KR">Korean</option>
-                        <option value="zh-CN">Chinese</option>
+                        <option value="zh-CN">Chinese (Simplified)</option>
                     </select>
                 </div>
                 
@@ -72,19 +88,38 @@
                         Auto-insert text
                     </label>
                 </div>
+                
+                <div class="setting-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="continuousMode">
+                        <span class="checkmark"></span>
+                        Continuous mode
+                    </label>
+                </div>
             </div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">
-            <button class="settings-btn" id="settingsBtn">
-                <span class="settings-icon">⚙️</span>
+            <button class="settings-btn" id="settingsBtn" aria-label="Open settings">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/>
+                </svg>
                 Settings
             </button>
-            <span class="version">v1.0.0</span>
+            <div class="footer-info">
+                <span class="version">v2.0.0</span>
+                <button class="help-btn" id="helpBtn" aria-label="Help">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM13 19H11V17H13V19ZM15.07 11.25L14.17 12.17C13.45 12.9 13 13.5 13 15H11V14.5C11 13.4 11.45 12.4 12.17 11.67L13.41 10.41C13.78 10.05 14 9.55 14 9C14 7.9 13.1 7 12 7C10.9 7 10 7.9 10 9H8C8 6.79 9.79 5 12 5C14.21 5 16 6.79 16 9C16 9.88 15.64 10.68 15.07 11.25Z"/>
+                    </svg>
+                </button>
+            </div>
         </div>
     </div>
 
+    <div class="sr-only" role="status" aria-live="polite" aria-atomic="true" id="announcer"></div>
+
+    <script src="../lib/utils.js"></script>
     <script src="popup.js"></script>
 </body>
 </html> 
