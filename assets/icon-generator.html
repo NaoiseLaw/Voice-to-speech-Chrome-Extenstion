@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Input Extension - Icon Generator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .icon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .icon-item {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .icon-display {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .icon-16 { width: 16px; height: 16px; }
+        .icon-32 { width: 32px; height: 32px; }
+        .icon-48 { width: 48px; height: 48px; }
+        .icon-128 { width: 128px; height: 128px; }
+        
+        .icon-svg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .icon-info {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .download-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .download-all {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .download-all-btn {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .download-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Voice Input Extension - Icon Generator</h1>
+        
+        <div class="instructions">
+            <h3>How to Generate Icons:</h3>
+            <ol>
+                <li>Click "Download All Icons" to download all required icon sizes</li>
+                <li>Or click individual download buttons for specific sizes</li>
+                <li>The icons will be saved as PNG files with transparency</li>
+                <li>Place the downloaded files in the <code>assets/</code> directory</li>
+                <li>Rename them to: <code>icon16.png</code>, <code>icon32.png</code>, <code>icon48.png</code>, <code>icon128.png</code></li>
+            </ol>
+        </div>
+        
+        <div class="icon-grid">
+            <div class="icon-item">
+                <div class="icon-display">
+                    <div class="icon-svg icon-16">🎤</div>
+                </div>
+                <div class="icon-info">16x16 pixels<br>Toolbar icon</div>
+                <button class="download-btn" onclick="downloadIcon(16)">Download</button>
+            </div>
+            
+            <div class="icon-item">
+                <div class="icon-display">
+                    <div class="icon-svg icon-32">🎤</div>
+                </div>
+                <div class="icon-info">32x32 pixels<br>Windows taskbar</div>
+                <button class="download-btn" onclick="downloadIcon(32)">Download</button>
+            </div>
+            
+            <div class="icon-item">
+                <div class="icon-display">
+                    <div class="icon-svg icon-48">🎤</div>
+                </div>
+                <div class="icon-info">48x48 pixels<br>Extension management</div>
+                <button class="download-btn" onclick="downloadIcon(48)">Download</button>
+            </div>
+            
+            <div class="icon-item">
+                <div class="icon-display">
+                    <div class="icon-svg icon-128">🎤</div>
+                </div>
+                <div class="icon-info">128x128 pixels<br>Chrome Web Store</div>
+                <button class="download-btn" onclick="downloadIcon(128)">Download</button>
+            </div>
+        </div>
+        
+        <div class="download-all">
+            <button class="download-all-btn" onclick="downloadAllIcons()">Download All Icons</button>
+        </div>
+    </div>
+
+    <script>
+        // Create canvas for icon generation
+        function createIconCanvas(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // Create gradient background
+            const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            
+            // Draw background circle
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(size/2, size/2, size/2, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Add shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = size * 0.1;
+            ctx.shadowOffsetX = size * 0.05;
+            ctx.shadowOffsetY = size * 0.05;
+            
+            // Draw microphone icon
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.6}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('🎤', size/2, size/2);
+            
+            return canvas;
+        }
+        
+        // Download single icon
+        function downloadIcon(size) {
+            const canvas = createIconCanvas(size);
+            const link = document.createElement('a');
+            link.download = `icon${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Download all icons
+        function downloadAllIcons() {
+            const sizes = [16, 32, 48, 128];
+            sizes.forEach(size => {
+                setTimeout(() => downloadIcon(size), size * 10);
+            });
+        }
+        
+        // Alternative: Create SVG-based icons
+        function createSVGIcon(size) {
+            const svg = `
+                <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <radialGradient id="grad${size}" cx="50%" cy="50%" r="50%">
+                            <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                        </radialGradient>
+                    </defs>
+                    <circle cx="${size/2}" cy="${size/2}" r="${size/2}" fill="url(#grad${size})"/>
+                    <text x="${size/2}" y="${size/2}" font-family="Arial" font-size="${size * 0.6}" font-weight="bold" text-anchor="middle" dy="0.2em" fill="white">🎤</text>
+                </svg>
+            `;
+            return svg;
+        }
+        
+        // Download SVG icon
+        function downloadSVGIcon(size) {
+            const svg = createSVGIcon(size);
+            const blob = new Blob([svg], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.download = `icon${size}.svg`;
+            link.href = url;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html> 

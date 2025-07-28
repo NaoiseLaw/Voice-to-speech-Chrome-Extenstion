@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Input Extension</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <span class="logo-icon">🎤</span>
+                <h1>Voice Input</h1>
+            </div>
+            <div class="status" id="status">
+                <span class="status-dot" id="statusDot"></span>
+                <span class="status-text" id="statusText">Ready</span>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Voice Button -->
+            <div class="voice-section">
+                <button class="voice-btn" id="voiceBtn">
+                    <span class="mic-icon" id="micIcon">🎤</span>
+                    <span class="btn-text" id="btnText">Start Recording</span>
+                </button>
+                
+                <div class="voice-info" id="voiceInfo">
+                    <p class="info-text">Click the button above to start voice recording</p>
+                    <div class="transcript" id="transcript"></div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="actions">
+                <button class="action-btn" id="insertBtn" disabled>
+                    <span class="action-icon">📝</span>
+                    Insert Text
+                </button>
+                <button class="action-btn" id="copyBtn" disabled>
+                    <span class="action-icon">📋</span>
+                    Copy Text
+                </button>
+            </div>
+
+            <!-- Settings -->
+            <div class="settings">
+                <div class="setting-row">
+                    <label for="language">Language:</label>
+                    <select id="language" class="setting-select">
+                        <option value="en-US">English (US)</option>
+                        <option value="en-GB">English (UK)</option>
+                        <option value="es-ES">Spanish</option>
+                        <option value="fr-FR">French</option>
+                        <option value="de-DE">German</option>
+                        <option value="it-IT">Italian</option>
+                        <option value="pt-BR">Portuguese</option>
+                        <option value="ja-JP">Japanese</option>
+                        <option value="ko-KR">Korean</option>
+                        <option value="zh-CN">Chinese</option>
+                    </select>
+                </div>
+                
+                <div class="setting-row">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="autoInsert">
+                        <span class="checkmark"></span>
+                        Auto-insert text
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <button class="settings-btn" id="settingsBtn">
+                <span class="settings-icon">⚙️</span>
+                Settings
+            </button>
+            <span class="version">v1.0.0</span>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+</html> 
+</html> 

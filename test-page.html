@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-to-Text Extension Test Page</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .test-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .test-section p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .instructions h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .instructions ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        .status {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .status h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .status p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Voice-to-Text Extension Test Page</h1>
+        
+        <div class="instructions">
+            <h3>📋 How to Test Your Extension</h3>
+            <ol>
+                <li><strong>Load the extension</strong> in Chrome's developer mode</li>
+                <li><strong>Click the extension icon</strong> in the toolbar</li>
+                <li><strong>Click "Start Recording"</strong> in the popup</li>
+                <li><strong>Click in any text field below</strong> to focus it</li>
+                <li><strong>Speak clearly</strong> into your microphone</li>
+                <li><strong>Click "Insert Text"</strong> or use auto-insert if enabled</li>
+            </ol>
+        </div>
+        
+        <div class="status">
+            <h3>🔍 Extension Status</h3>
+            <p><strong>Extension Loaded:</strong> <span id="extensionStatus">Checking...</span></p>
+            <p><strong>Microphone Permission:</strong> <span id="micStatus">Unknown</span></p>
+            <p><strong>Active Element:</strong> <span id="activeElement">None</span></p>
+        </div>
+        
+        <div class="test-section">
+            <h2>📝 Regular Text Input</h2>
+            <p>Test with a standard text input field:</p>
+            <input type="text" placeholder="Click here and speak to test voice input..." id="textInput">
+        </div>
+        
+        <div class="test-section">
+            <h2>📧 Email Input</h2>
+            <p>Test with an email input field:</p>
+            <input type="email" placeholder="Enter your email address..." id="emailInput">
+        </div>
+        
+        <div class="test-section">
+            <h2>🔍 Search Input</h2>
+            <p>Test with a search input field:</p>
+            <input type="search" placeholder="Search for something..." id="searchInput">
+        </div>
+        
+        <div class="test-section">
+            <h2>📄 Textarea</h2>
+            <p>Test with a multi-line textarea:</p>
+            <textarea placeholder="Write a longer message here..." rows="4" id="textareaInput"></textarea>
+        </div>
+        
+        <div class="test-section">
+            <h2>📱 Phone Number</h2>
+            <p>Test with a phone number input:</p>
+            <input type="tel" placeholder="Enter phone number..." id="phoneInput">
+        </div>
+        
+        <div class="test-section">
+            <h2>🌐 URL Input</h2>
+            <p>Test with a URL input field:</p>
+            <input type="url" placeholder="Enter a website URL..." id="urlInput">
+        </div>
+        
+        <div class="highlight">
+            <strong>💡 Tips for Testing:</strong>
+            <ul>
+                <li>Speak clearly and at a normal pace</li>
+                <li>Try different languages if you've configured them</li>
+                <li>Test both short phrases and longer sentences</li>
+                <li>Check that the text appears in the correct field</li>
+                <li>Try the copy and insert buttons in the extension popup</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Check if extension is loaded
+        function checkExtensionStatus() {
+            const statusElement = document.getElementById('extensionStatus');
+            const micStatusElement = document.getElementById('micStatus');
+            const activeElementSpan = document.getElementById('activeElement');
+            
+            // Check for extension presence
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                statusElement.textContent = '✅ Extension detected';
+                statusElement.style.color = '#28a745';
+            } else {
+                statusElement.textContent = '❌ Extension not detected';
+                statusElement.style.color = '#dc3545';
+            }
+            
+            // Check microphone permission
+            navigator.permissions.query({ name: 'microphone' }).then(result => {
+                if (result.state === 'granted') {
+                    micStatusElement.textContent = '✅ Granted';
+                    micStatusElement.style.color = '#28a745';
+                } else if (result.state === 'denied') {
+                    micStatusElement.textContent = '❌ Denied';
+                    micStatusElement.style.color = '#dc3545';
+                } else {
+                    micStatusElement.textContent = '❓ Not set';
+                    micStatusElement.style.color = '#ffc107';
+                }
+            }).catch(() => {
+                micStatusElement.textContent = '❓ Unknown';
+                micStatusElement.style.color = '#6c757d';
+            });
+            
+            // Track active element
+            document.addEventListener('focusin', (event) => {
+                if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                    activeElementSpan.textContent = `${event.target.tagName.toLowerCase()}#${event.target.id}`;
+                }
+            });
+            
+            document.addEventListener('focusout', () => {
+                activeElementSpan.textContent = 'None';
+            });
+        }
+        
+        // Initialize status check
+        checkExtensionStatus();
+        
+        // Re-check status every 5 seconds
+        setInterval(checkExtensionStatus, 5000);
+    </script>
+</body>
+</html> 

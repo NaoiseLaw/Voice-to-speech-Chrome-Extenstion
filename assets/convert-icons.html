@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG to PNG Converter</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .converter {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .icon-preview {
+            text-align: center;
+            padding: 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+        
+        .icon-preview img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        .instructions {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .instructions h3 {
+            color: #1976d2;
+            margin-top: 0;
+        }
+        
+        .instructions ol {
+            color: #555;
+            line-height: 1.6;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 SVG to PNG Icon Converter</h1>
+        
+        <div class="instructions">
+            <h3>How to Convert Icons:</h3>
+            <ol>
+                <li>Click "Convert All Icons" to convert all SVG files to PNG</li>
+                <li>Or click individual convert buttons for specific sizes</li>
+                <li>The PNG files will be downloaded automatically</li>
+                <li>Place the downloaded files in the <code>assets/</code> directory</li>
+                <li>Make sure the files are named: <code>icon16.png</code>, <code>icon32.png</code>, <code>icon48.png</code>, <code>icon128.png</code></li>
+            </ol>
+        </div>
+        
+        <div class="converter">
+            <button class="btn" onclick="convertAllIcons()">Convert All Icons</button>
+            <button class="btn" onclick="convertIcon(16)">Convert 16x16</button>
+            <button class="btn" onclick="convertIcon(32)">Convert 32x32</button>
+            <button class="btn" onclick="convertIcon(48)">Convert 48x48</button>
+            <button class="btn" onclick="convertIcon(128)">Convert 128x128</button>
+        </div>
+        
+        <div class="preview">
+            <div class="icon-preview">
+                <h4>16x16</h4>
+                <img src="icon16.svg" alt="16x16 icon" id="preview16">
+            </div>
+            <div class="icon-preview">
+                <h4>32x32</h4>
+                <img src="icon32.svg" alt="32x32 icon" id="preview32">
+            </div>
+            <div class="icon-preview">
+                <h4>48x48</h4>
+                <img src="icon48.svg" alt="48x48 icon" id="preview48">
+            </div>
+            <div class="icon-preview">
+                <h4>128x128</h4>
+                <img src="icon128.svg" alt="128x128 icon" id="preview128">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // SVG content for each icon size
+        const svgContent = {
+            16: `<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="grad16" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                    </radialGradient>
+                    <filter id="shadow16" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="0.8" dy="0.8" stdDeviation="1" flood-color="rgba(0,0,0,0.3)"/>
+                    </filter>
+                </defs>
+                <circle cx="8" cy="8" r="8" fill="url(#grad16)" filter="url(#shadow16)"/>
+                <text x="8" y="8" font-family="Arial, sans-serif" font-size="10" font-weight="bold" text-anchor="middle" dy="0.2em" fill="white">🎤</text>
+            </svg>`,
+            
+            32: `<svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="grad32" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                    </radialGradient>
+                    <filter id="shadow32" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="1.6" dy="1.6" stdDeviation="2" flood-color="rgba(0,0,0,0.3)"/>
+                    </filter>
+                </defs>
+                <circle cx="16" cy="16" r="16" fill="url(#grad32)" filter="url(#shadow32)"/>
+                <text x="16" y="16" font-family="Arial, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" dy="0.2em" fill="white">🎤</text>
+            </svg>`,
+            
+            48: `<svg width="48" height="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="grad48" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                    </radialGradient>
+                    <filter id="shadow48" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="2.4" dy="2.4" stdDeviation="3" flood-color="rgba(0,0,0,0.3)"/>
+                    </filter>
+                </defs>
+                <circle cx="24" cy="24" r="24" fill="url(#grad48)" filter="url(#shadow48)"/>
+                <text x="24" y="24" font-family="Arial, sans-serif" font-size="30" font-weight="bold" text-anchor="middle" dy="0.2em" fill="white">🎤</text>
+            </svg>`,
+            
+            128: `<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <radialGradient id="grad128" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                    </radialGradient>
+                    <filter id="shadow128" x="-20%" y="-20%" width="140%" height="140%">
+                        <feDropShadow dx="6.4" dy="6.4" stdDeviation="8" flood-color="rgba(0,0,0,0.3)"/>
+                    </filter>
+                </defs>
+                <circle cx="64" cy="64" r="64" fill="url(#grad128)" filter="url(#shadow128)"/>
+                <text x="64" y="64" font-family="Arial, sans-serif" font-size="80" font-weight="bold" text-anchor="middle" dy="0.2em" fill="white">🎤</text>
+            </svg>`
+        };
+
+        // Convert SVG to PNG
+        function convertSVGToPNG(svgContent, size) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, 0, size, size);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                
+                const svgBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+                const url = URL.createObjectURL(svgBlob);
+                img.src = url;
+            });
+        }
+
+        // Convert single icon
+        async function convertIcon(size) {
+            try {
+                const pngDataUrl = await convertSVGToPNG(svgContent[size], size);
+                const link = document.createElement('a');
+                link.download = `icon${size}.png`;
+                link.href = pngDataUrl;
+                link.click();
+            } catch (error) {
+                console.error(`Error converting icon ${size}:`, error);
+                alert(`Error converting icon ${size}x${size}`);
+            }
+        }
+
+        // Convert all icons
+        async function convertAllIcons() {
+            const sizes = [16, 32, 48, 128];
+            for (let i = 0; i < sizes.length; i++) {
+                const size = sizes[i];
+                setTimeout(async () => {
+                    await convertIcon(size);
+                }, i * 500); // Delay each conversion by 500ms
+            }
+        }
+
+        // Load SVG previews
+        window.addEventListener('load', () => {
+            // The preview images should load automatically from the SVG files
+            console.log('Icon converter loaded successfully');
+        });
+    </script>
+</body>
+</html> 
