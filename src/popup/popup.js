@@ -376,10 +376,93 @@ class PopupController {
     }
 
     initializeVisualizer() {
-        this.visualizer = this.elements.voiceVisualizer;
-        const ctx = this.visualizer.getContext('2d');
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.lineWidth = 2;
+        const canvas = this.elements.voiceVisualizer;
+        if (!canvas) return;
+        
+        this.visualizer = canvas.getContext('2d');
+        this.visualizer.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        this.visualizer.lineWidth = 2;
+    }
+
+    initializeGestures() {
+        // Initialize touch gestures for mobile devices
+        if (this.isMobile) {
+            this.setupMobileGestures();
+        }
+        
+        // Initialize mouse gestures for desktop
+        this.setupDesktopGestures();
+    }
+
+    setupDesktopGestures() {
+        // Long press detection for desktop
+        let pressTimer = null;
+        const LONG_PRESS_DURATION = 500;
+        
+        this.elements.voiceBtn.addEventListener('mousedown', (e) => {
+            pressTimer = setTimeout(() => {
+                this.showContextMenu(e);
+            }, LONG_PRESS_DURATION);
+        });
+        
+        this.elements.voiceBtn.addEventListener('mouseup', () => {
+            if (pressTimer) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+        });
+        
+        this.elements.voiceBtn.addEventListener('mouseleave', () => {
+            if (pressTimer) {
+                clearTimeout(pressTimer);
+                pressTimer = null;
+            }
+        });
+    }
+
+    showContextMenu(event) {
+        // Show context menu for additional options
+        const menu = document.createElement('div');
+        menu.className = 'context-menu';
+        menu.innerHTML = `
+            <div class="menu-item" data-action="settings">Settings</div>
+            <div class="menu-item" data-action="help">Help</div>
+        `;
+        
+        menu.style.position = 'absolute';
+        menu.style.left = event.clientX + 'px';
+        menu.style.top = event.clientY + 'px';
+        menu.style.background = 'white';
+        menu.style.border = '1px solid #ccc';
+        menu.style.borderRadius = '4px';
+        menu.style.padding = '4px 0';
+        menu.style.zIndex = '1000';
+        menu.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+        
+        document.body.appendChild(menu);
+        
+        // Remove menu when clicking outside
+        const removeMenu = () => {
+            if (menu.parentNode) {
+                menu.parentNode.removeChild(menu);
+            }
+            document.removeEventListener('click', removeMenu);
+        };
+        
+        setTimeout(() => {
+            document.addEventListener('click', removeMenu);
+        }, 100);
+        
+        // Handle menu item clicks
+        menu.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            if (action === 'settings') {
+                this.openSettings();
+            } else if (action === 'help') {
+                this.showHelp();
+            }
+            removeMenu();
+        });
     }
 
     startVisualizer() {
