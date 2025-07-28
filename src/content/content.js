@@ -15,9 +15,6 @@ class VoiceInputManager {
     // Load settings
     await this.loadSettings();
     
-    // Initialize Web Speech API
-    this.initializeSpeechRecognition();
-    
     // Listen for messages from background script
     window.addEventListener('message', (event) => {
       if (event.source !== window) return;
@@ -150,7 +147,13 @@ class VoiceInputManager {
 
   startRecognition() {
     if (!this.recognition) {
-      console.error('Speech recognition not initialized');
+      // Initialize speech recognition if not already done
+      this.initializeSpeechRecognition();
+    }
+
+    if (!this.recognition) {
+      console.error('Speech recognition not supported');
+      this.sendError('Speech recognition not supported in this browser');
       return;
     }
 

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Extension Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Quick Extension Test</h1>
+        
+        <div class="test-section">
+            <h3>Extension Status</h3>
+            <div id="extensionStatus" class="status info">Checking extension...</div>
+            <div id="micStatus" class="status info">Checking microphone...</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>Test Input Fields</h3>
+            <input type="text" placeholder="Type or speak here..." id="testInput1">
+            <input type="email" placeholder="Email test..." id="testInput2">
+            <textarea placeholder="Multi-line test..." rows="3" id="testTextarea"></textarea>
+        </div>
+        
+        <div class="test-section">
+            <h3>Instructions</h3>
+            <ol>
+                <li>Load the extension in Chrome (chrome://extensions/)</li>
+                <li>Click the extension icon in the toolbar</li>
+                <li>Click "Start Recording" in the popup</li>
+                <li>Click in any text field above</li>
+                <li>Speak clearly into your microphone</li>
+                <li>Click "Insert Text" in the popup</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        // Quick status check
+        function checkStatus() {
+            const extensionStatus = document.getElementById('extensionStatus');
+            const micStatus = document.getElementById('micStatus');
+            
+            // Check extension
+            if (typeof chrome !== 'undefined' && chrome.runtime) {
+                extensionStatus.textContent = '✅ Extension detected';
+                extensionStatus.className = 'status success';
+            } else {
+                extensionStatus.textContent = '❌ Extension not detected';
+                extensionStatus.className = 'status error';
+            }
+            
+            // Check microphone
+            navigator.permissions.query({ name: 'microphone' }).then(result => {
+                if (result.state === 'granted') {
+                    micStatus.textContent = '✅ Microphone permission granted';
+                    micStatus.className = 'status success';
+                } else if (result.state === 'denied') {
+                    micStatus.textContent = '❌ Microphone permission denied';
+                    micStatus.className = 'status error';
+                } else {
+                    micStatus.textContent = '❓ Microphone permission not set';
+                    micStatus.className = 'status info';
+                }
+            }).catch(() => {
+                micStatus.textContent = '❓ Cannot check microphone permission';
+                micStatus.className = 'status info';
+            });
+        }
+        
+        // Run check on load
+        checkStatus();
+        
+        // Re-check every 5 seconds
+        setInterval(checkStatus, 5000);
+    </script>
+</body>
+</html> 

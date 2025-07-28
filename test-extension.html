@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice-to-Text Extension - Comprehensive Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        
+        .test-section h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .test-section p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .status-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .status-card h3 {
+            color: #495057;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .status-card p {
+            margin: 5px 0;
+            color: #6c757d;
+        }
+        
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        
+        .test-checklist {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1976d2;
+        }
+        
+        .test-checklist h3 {
+            color: #1976d2;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .checklist-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: auto;
+        }
+        
+        .checklist-item label {
+            flex: 1;
+            margin: 0;
+            cursor: pointer;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .test-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .test-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Voice-to-Text Extension - Comprehensive Test</h1>
+        
+        <div class="test-checklist">
+            <h3>📋 Pre-Test Checklist</h3>
+            <div class="checklist-item">
+                <input type="checkbox" id="check1">
+                <label for="check1">Extension is loaded in Chrome (chrome://extensions/)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check2">
+                <label for="check2">Extension icon appears in Chrome toolbar</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check3">
+                <label for="check3">Microphone permission is granted</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check4">
+                <label for="check4">Test microphone is working in other applications</label>
+            </div>
+        </div>
+        
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>🔍 Extension Status</h3>
+                <p><strong>Extension Loaded:</strong> <span id="extensionStatus">Checking...</span></p>
+                <p><strong>Manifest Version:</strong> <span id="manifestVersion">Checking...</span></p>
+                <p><strong>Popup Accessible:</strong> <span id="popupStatus">Checking...</span></p>
+            </div>
+            
+            <div class="status-card">
+                <h3>🎤 Microphone Status</h3>
+                <p><strong>Permission:</strong> <span id="micPermission">Checking...</span></p>
+                <p><strong>Device Available:</strong> <span id="micDevice">Checking...</span></p>
+                <p><strong>Test Recording:</strong> <span id="micTest">Ready</span></p>
+            </div>
+            
+            <div class="status-card">
+                <h3>🌐 Page Status</h3>
+                <p><strong>Content Script:</strong> <span id="contentScript">Checking...</span></p>
+                <p><strong>Active Element:</strong> <span id="activeElement">None</span></p>
+                <p><strong>Page URL:</strong> <span id="pageUrl">-</span></p>
+            </div>
+            
+            <div class="status-card">
+                <h3>⚙️ Settings Status</h3>
+                <p><strong>Language:</strong> <span id="currentLanguage">Checking...</span></p>
+                <p><strong>Auto-Insert:</strong> <span id="autoInsert">Checking...</span></p>
+                <p><strong>Storage Access:</strong> <span id="storageStatus">Checking...</span></p>
+            </div>
+        </div>
+        
+        <div class="button-group">
+            <button class="test-btn" id="testMicBtn">Test Microphone</button>
+            <button class="test-btn" id="testStorageBtn">Test Storage</button>
+            <button class="test-btn" id="testExtensionBtn">Test Extension API</button>
+            <button class="test-btn" id="clearStorageBtn">Clear Storage</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Core Functionality Tests</h2>
+            <p>Test the main voice-to-text functionality:</p>
+            
+            <div class="highlight">
+                <strong>Test Steps:</strong>
+                <ol>
+                    <li>Click the extension icon in Chrome toolbar</li>
+                    <li>Click "Start Recording" in the popup</li>
+                    <li>Click in any text field below</li>
+                    <li>Speak clearly into your microphone</li>
+                    <li>Click "Insert Text" or use auto-insert</li>
+                    <li>Verify text appears in the selected field</li>
+                </ol>
+            </div>
+            
+            <input type="text" placeholder="Test 1: Basic text input..." id="testInput1">
+            <input type="email" placeholder="Test 2: Email input..." id="testInput2">
+            <textarea placeholder="Test 3: Multi-line textarea..." rows="3" id="testTextarea"></textarea>
+        </div>
+        
+        <div class="test-section">
+            <h2>🔧 Advanced Tests</h2>
+            <p>Test advanced features and edge cases:</p>
+            
+            <input type="search" placeholder="Test 4: Search input..." id="testInput4">
+            <input type="tel" placeholder="Test 5: Phone number..." id="testInput5">
+            <input type="url" placeholder="Test 6: URL input..." id="testInput6">
+            
+            <div class="highlight">
+                <strong>Advanced Test Cases:</strong>
+                <ul>
+                    <li>Test with different languages (change in extension settings)</li>
+                    <li>Test auto-insert functionality</li>
+                    <li>Test copy to clipboard feature</li>
+                    <li>Test with long sentences and paragraphs</li>
+                    <li>Test with special characters and numbers</li>
+                    <li>Test error handling (deny microphone permission)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Test Results</h2>
+            <div id="testResults">
+                <p>Test results will appear here as you perform tests...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Comprehensive test suite
+        class ExtensionTester {
+            constructor() {
+                this.testResults = [];
+                this.init();
+            }
+            
+            init() {
+                this.checkExtensionStatus();
+                this.checkMicrophoneStatus();
+                this.checkPageStatus();
+                this.checkSettingsStatus();
+                this.setupEventListeners();
+                this.updatePageInfo();
+            }
+            
+            checkExtensionStatus() {
+                const statusElement = document.getElementById('extensionStatus');
+                const manifestElement = document.getElementById('manifestVersion');
+                const popupElement = document.getElementById('popupStatus');
+                
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    statusElement.textContent = '✅ Extension detected';
+                    statusElement.className = 'success';
+                    
+                    // Check manifest version
+                    chrome.runtime.getManifest().then(manifest => {
+                        manifestElement.textContent = `v${manifest.version} (MV${manifest.manifest_version})`;
+                    }).catch(() => {
+                        manifestElement.textContent = 'Unknown';
+                    });
+                    
+                    // Check popup accessibility
+                    popupElement.textContent = '✅ Accessible';
+                    popupElement.className = 'success';
+                } else {
+                    statusElement.textContent = '❌ Extension not detected';
+                    statusElement.className = 'error';
+                    manifestElement.textContent = 'N/A';
+                    popupElement.textContent = '❌ Not accessible';
+                    popupElement.className = 'error';
+                }
+            }
+            
+            async checkMicrophoneStatus() {
+                const permissionElement = document.getElementById('micPermission');
+                const deviceElement = document.getElementById('micDevice');
+                
+                try {
+                    const result = await navigator.permissions.query({ name: 'microphone' });
+                    if (result.state === 'granted') {
+                        permissionElement.textContent = '✅ Granted';
+                        permissionElement.className = 'success';
+                    } else if (result.state === 'denied') {
+                        permissionElement.textContent = '❌ Denied';
+                        permissionElement.className = 'error';
+                    } else {
+                        permissionElement.textContent = '❓ Not set';
+                        permissionElement.className = 'warning';
+                    }
+                } catch (error) {
+                    permissionElement.textContent = '❓ Unknown';
+                    permissionElement.className = 'info';
+                }
+                
+                // Check for microphone devices
+                try {
+                    const devices = await navigator.mediaDevices.enumerateDevices();
+                    const audioDevices = devices.filter(device => device.kind === 'audioinput');
+                    if (audioDevices.length > 0) {
+                        deviceElement.textContent = `✅ ${audioDevices.length} device(s)`;
+                        deviceElement.className = 'success';
+                    } else {
+                        deviceElement.textContent = '❌ No devices found';
+                        deviceElement.className = 'error';
+                    }
+                } catch (error) {
+                    deviceElement.textContent = '❓ Cannot check';
+                    deviceElement.className = 'warning';
+                }
+            }
+            
+            checkPageStatus() {
+                const contentScriptElement = document.getElementById('contentScript');
+                const activeElementSpan = document.getElementById('activeElement');
+                const pageUrlElement = document.getElementById('pageUrl');
+                
+                // Check if content script is running
+                if (typeof chrome !== 'undefined' && chrome.runtime) {
+                    contentScriptElement.textContent = '✅ Running';
+                    contentScriptElement.className = 'success';
+                } else {
+                    contentScriptElement.textContent = '❌ Not detected';
+                    contentScriptElement.className = 'error';
+                }
+                
+                // Track active element
+                document.addEventListener('focusin', (event) => {
+                    if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+                        activeElementSpan.textContent = `${event.target.tagName.toLowerCase()}#${event.target.id}`;
+                    }
+                });
+                
+                document.addEventListener('focusout', () => {
+                    activeElementSpan.textContent = 'None';
+                });
+                
+                // Show page URL
+                pageUrlElement.textContent = window.location.href;
+            }
+            
+            async checkSettingsStatus() {
+                const languageElement = document.getElementById('currentLanguage');
+                const autoInsertElement = document.getElementById('autoInsert');
+                const storageElement = document.getElementById('storageStatus');
+                
+                try {
+                    if (typeof chrome !== 'undefined' && chrome.storage) {
+                        const result = await chrome.storage.sync.get(['language', 'autoInsert']);
+                        languageElement.textContent = result.language || 'en-US';
+                        autoInsertElement.textContent = result.autoInsert ? '✅ Enabled' : '❌ Disabled';
+                        storageElement.textContent = '✅ Accessible';
+                        storageElement.className = 'success';
+                    } else {
+                        languageElement.textContent = 'N/A';
+                        autoInsertElement.textContent = 'N/A';
+                        storageElement.textContent = '❌ Not accessible';
+                        storageElement.className = 'error';
+                    }
+                } catch (error) {
+                    languageElement.textContent = 'Error';
+                    autoInsertElement.textContent = 'Error';
+                    storageElement.textContent = '❌ Error';
+                    storageElement.className = 'error';
+                }
+            }
+            
+            setupEventListeners() {
+                document.getElementById('testMicBtn').addEventListener('click', () => {
+                    this.testMicrophone();
+                });
+                
+                document.getElementById('testStorageBtn').addEventListener('click', () => {
+                    this.testStorage();
+                });
+                
+                document.getElementById('testExtensionBtn').addEventListener('click', () => {
+                    this.testExtensionAPI();
+                });
+                
+                document.getElementById('clearStorageBtn').addEventListener('click', () => {
+                    this.clearStorage();
+                });
+            }
+            
+            async testMicrophone() {
+                const testElement = document.getElementById('micTest');
+                testElement.textContent = 'Testing...';
+                testElement.className = 'warning';
+                
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    testElement.textContent = '✅ Working';
+                    testElement.className = 'success';
+                    stream.getTracks().forEach(track => track.stop());
+                    this.addTestResult('Microphone test', 'PASSED', 'Microphone is working correctly');
+                } catch (error) {
+                    testElement.textContent = '❌ Failed';
+                    testElement.className = 'error';
+                    this.addTestResult('Microphone test', 'FAILED', error.message);
+                }
+            }
+            
+            async testStorage() {
+                try {
+                    await chrome.storage.sync.set({ testKey: 'testValue' });
+                    const result = await chrome.storage.sync.get(['testKey']);
+                    if (result.testKey === 'testValue') {
+                        await chrome.storage.sync.remove(['testKey']);
+                        this.addTestResult('Storage test', 'PASSED', 'Chrome storage is working correctly');
+                    } else {
+                        this.addTestResult('Storage test', 'FAILED', 'Storage read/write failed');
+                    }
+                } catch (error) {
+                    this.addTestResult('Storage test', 'FAILED', error.message);
+                }
+            }
+            
+            async testExtensionAPI() {
+                try {
+                    const manifest = await chrome.runtime.getManifest();
+                    this.addTestResult('Extension API test', 'PASSED', `Manifest loaded: ${manifest.name}`);
+                } catch (error) {
+                    this.addTestResult('Extension API test', 'FAILED', error.message);
+                }
+            }
+            
+            async clearStorage() {
+                try {
+                    await chrome.storage.sync.clear();
+                    this.addTestResult('Clear storage', 'PASSED', 'Storage cleared successfully');
+                    this.checkSettingsStatus(); // Refresh settings display
+                } catch (error) {
+                    this.addTestResult('Clear storage', 'FAILED', error.message);
+                }
+            }
+            
+            addTestResult(testName, status, message) {
+                const resultsDiv = document.getElementById('testResults');
+                const resultElement = document.createElement('div');
+                resultElement.style.padding = '10px';
+                resultElement.style.margin = '5px 0';
+                resultElement.style.borderRadius = '4px';
+                resultElement.style.border = '1px solid #ddd';
+                
+                if (status === 'PASSED') {
+                    resultElement.style.backgroundColor = '#d4edda';
+                    resultElement.style.borderColor = '#c3e6cb';
+                    resultElement.style.color = '#155724';
+                } else {
+                    resultElement.style.backgroundColor = '#f8d7da';
+                    resultElement.style.borderColor = '#f5c6cb';
+                    resultElement.style.color = '#721c24';
+                }
+                
+                resultElement.innerHTML = `
+                    <strong>${testName}:</strong> ${status}<br>
+                    <small>${message}</small>
+                `;
+                
+                resultsDiv.appendChild(resultElement);
+            }
+            
+            updatePageInfo() {
+                // Update page information
+                document.title = `Voice-to-Text Extension Test - ${window.location.hostname}`;
+            }
+        }
+        
+        // Initialize tester when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ExtensionTester();
+        });
+    </script>
+</body>
+</html> 

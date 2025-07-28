@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Popup UI Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid #1976d2;
+        }
+        .checklist {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .checklist h3 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .checklist ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .checklist li {
+            margin: 5px 0;
+            color: #666;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Popup UI Test - Microphone Activation</h1>
+        
+        <div class="instructions">
+            <h3>📋 Test Instructions</h3>
+            <p>This test will help you verify that the popup UI displays properly when the microphone is activated.</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 Popup UI Checklist</h3>
+            <div class="checklist">
+                <h3>When Extension Icon is Clicked:</h3>
+                <ul>
+                    <li>✅ Popup opens with clean layout</li>
+                    <li>✅ Purple header with microphone icon</li>
+                    <li>✅ "Start Recording" button is visible</li>
+                    <li>✅ Language dropdown is accessible</li>
+                    <li>✅ Settings button is at bottom</li>
+                </ul>
+            </div>
+            
+            <div class="checklist">
+                <h3>When "Start Recording" is Clicked:</h3>
+                <ul>
+                    <li>✅ Button changes to "Stop Recording"</li>
+                    <li>✅ Button icon changes to stop symbol (⏹️)</li>
+                    <li>✅ Button has orange color and glow effect</li>
+                    <li>✅ Status indicator shows "Listening"</li>
+                    <li>✅ Status dot pulses orange</li>
+                    <li>✅ Background has subtle orange tint</li>
+                    <li>✅ All content remains visible and accessible</li>
+                </ul>
+            </div>
+            
+            <div class="checklist">
+                <h3>When Speaking (Transcript Appears):</h3>
+                <ul>
+                    <li>✅ Transcript text appears in orange box</li>
+                    <li>✅ "Insert Text" and "Copy Text" buttons become enabled</li>
+                    <li>✅ Buttons have blue background when enabled</li>
+                    <li>✅ Transcript scrolls if too long</li>
+                    <li>✅ All UI elements remain accessible</li>
+                </ul>
+            </div>
+            
+            <div class="checklist">
+                <h3>When "Stop Recording" is Clicked:</h3>
+                <ul>
+                    <li>✅ Button returns to "Start Recording"</li>
+                    <li>✅ Button icon returns to microphone (🎤)</li>
+                    <li>✅ Button returns to green color</li>
+                    <li>✅ Status indicator shows "Ready"</li>
+                    <li>✅ Status dot returns to green</li>
+                    <li>✅ Background returns to normal</li>
+                    <li>✅ Action buttons remain enabled if text exists</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Test Input Fields</h3>
+            <p>Click in these fields to test text insertion:</p>
+            <input type="text" placeholder="Test field 1..." id="test1">
+            <input type="email" placeholder="Test field 2..." id="test2">
+            <textarea placeholder="Test field 3..." rows="3" id="test3"></textarea>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 UI Issues to Watch For</h3>
+            <div class="status info">
+                <strong>Common Issues:</strong>
+                <ul>
+                    <li>❌ Popup content gets cut off</li>
+                    <li>❌ Transcript text overflows</li>
+                    <li>❌ Buttons become inaccessible</li>
+                    <li>❌ Scroll bars appear unexpectedly</li>
+                    <li>❌ Text becomes unreadable</li>
+                    <li>❌ UI elements overlap</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Success Criteria</h3>
+            <div class="status success">
+                <strong>All of these should work:</strong>
+                <ul>
+                    <li>✅ Popup opens and closes smoothly</li>
+                    <li>✅ All buttons are clickable</li>
+                    <li>✅ All text is readable</li>
+                    <li>✅ Transcript displays properly</li>
+                    <li>✅ Settings page opens correctly</li>
+                    <li>✅ Language selection works</li>
+                    <li>✅ Auto-insert toggle works</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add some test functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Popup UI Test Page Loaded');
+            console.log('Instructions:');
+            console.log('1. Load the extension in Chrome');
+            console.log('2. Click the extension icon');
+            console.log('3. Test all UI elements');
+            console.log('4. Check for any display issues');
+        });
+    </script>
+</body>
+</html> 

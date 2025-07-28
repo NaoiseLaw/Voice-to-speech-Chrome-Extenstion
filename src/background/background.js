@@ -99,23 +99,26 @@ class BackgroundService {
       const granted = await this.requestMicrophonePermission();
       if (!granted) {
         this.isListening = false;
-        throw new Error('Microphone permission denied');
+        console.log('Microphone permission denied');
+        return;
       }
     }
 
-    // Inject content script to start voice recognition
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId },
-        function: () => {
-          // This will be executed in the content script context
-          window.postMessage({ type: 'START_VOICE_RECOGNITION' }, '*');
-        }
-      });
-    } catch (error) {
-      console.error('Failed to start voice input:', error);
-      this.isListening = false;
-      throw error;
+    // Send message to content script to start recognition
+    if (tabId) {
+      try {
+        await chrome.scripting.executeScript({
+          target: { tabId },
+          function: () => {
+            window.postMessage({
+              type: 'START_VOICE_RECOGNITION'
+            }, '*');
+          }
+        });
+      } catch (error) {
+        console.error('Failed to start voice input:', error);
+        this.isListening = false;
+      }
     }
   }
 

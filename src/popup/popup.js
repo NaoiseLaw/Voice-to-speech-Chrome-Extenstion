@@ -194,12 +194,19 @@ class PopupController {
     // Update voice button
     this.voiceBtn.classList.toggle('listening', this.isListening);
     
+    // Update main content background
+    const mainContent = document.querySelector('.main');
+    mainContent.classList.toggle('recording', this.isListening);
+    
     if (this.isListening) {
       this.btnText.textContent = 'Stop Recording';
       this.micIcon.textContent = '⏹️';
+      // Add visual feedback for active recording
+      this.voiceBtn.style.transform = 'scale(1.05)';
     } else {
       this.btnText.textContent = 'Start Recording';
       this.micIcon.textContent = '🎤';
+      this.voiceBtn.style.transform = 'scale(1)';
     }
 
     // Update status indicator
@@ -228,6 +235,8 @@ class PopupController {
     // Enable action buttons if we have text
     if (text) {
       this.enableActionButtons();
+      // Ensure the transcript is visible by scrolling if needed
+      this.transcript.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     } else {
       this.disableActionButtons();
     }
