@@ -145,7 +145,7 @@ class VoiceInputManager {
     );
   }
 
-  startRecognition() {
+  async startRecognition() {
     if (!this.recognition) {
       // Initialize speech recognition if not already done
       this.initializeSpeechRecognition();
@@ -159,6 +159,25 @@ class VoiceInputManager {
 
     if (this.isListening) {
       console.log('Already listening');
+      return;
+    }
+
+    // Check microphone permission first
+    try {
+      const permissionResult = await navigator.permissions.query({ name: 'microphone' });
+      if (permissionResult.state === 'denied') {
+        this.sendError('Microphone permission denied. Please allow microphone access in your browser settings.');
+        return;
+      }
+      
+      if (permissionResult.state === 'prompt') {
+        // Request microphone permission
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach(track => track.stop());
+      }
+    } catch (error) {
+      console.error('Microphone permission error:', error);
+      this.sendError('Failed to access microphone. Please check your browser settings.');
       return;
     }
 

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Microphone Permission Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        .button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #5a6fd8;
+        }
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Microphone Permission Test</h1>
+        
+        <div class="test-section">
+            <h3>🔧 Permission Fix Applied</h3>
+            <p>The extension has been updated to handle microphone permissions correctly without using the invalid 'microphone' permission in manifest.json.</p>
+            
+            <div class="status info">
+                <strong>Changes Made:</strong>
+                <ul>
+                    <li>✅ Removed invalid 'microphone' permission from manifest.json</li>
+                    <li>✅ Updated background script to handle permissions via content script</li>
+                    <li>✅ Enhanced content script to request microphone access properly</li>
+                    <li>✅ Simplified popup permission flow</li>
+                    <li>✅ Added proper error handling for permission issues</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 How It Works Now</h3>
+            <div class="status success">
+                <strong>New Permission Flow:</strong>
+                <ol>
+                    <li>User clicks "Start Recording" in extension popup</li>
+                    <li>Background script sends message to content script</li>
+                    <li>Content script checks microphone permission status</li>
+                    <li>If permission is 'prompt', browser shows permission dialog</li>
+                    <li>If permission is 'granted', voice recognition starts</li>
+                    <li>If permission is 'denied', user gets error message</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test Microphone Access</h3>
+            <p>Test the microphone permission handling:</p>
+            
+            <button class="button" onclick="testMicrophonePermission()">Test Microphone Permission</button>
+            <button class="button" onclick="testMicrophoneAccess()">Test Microphone Access</button>
+            <button class="button" onclick="checkPermissionStatus()">Check Permission Status</button>
+            
+            <div id="testResults" class="status info" style="display: none;">
+                <strong>Test Results:</strong>
+                <div id="testOutput"></div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📝 Test Input Fields</h3>
+            <p>Use these fields to test voice input:</p>
+            <input type="text" placeholder="Test field 1..." id="testInput1">
+            <input type="email" placeholder="Test field 2..." id="testInput2">
+            <textarea placeholder="Test field 3..." rows="3" id="testTextarea"></textarea>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Verification Steps</h3>
+            <div class="status success">
+                <strong>Test the extension:</strong>
+                <ol>
+                    <li>Load the extension in Chrome (should work without errors)</li>
+                    <li>Click the extension icon</li>
+                    <li>Click "Start Recording"</li>
+                    <li>If prompted, allow microphone access</li>
+                    <li>Speak into microphone</li>
+                    <li>Verify text appears in the popup</li>
+                    <li>Click "Insert Text" to insert into a field</li>
+                </ol>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚨 Common Issues & Solutions</h3>
+            <div class="status warning">
+                <strong>If you encounter issues:</strong>
+                <ul>
+                    <li><strong>Permission denied:</strong> Check Chrome settings → Privacy → Site Settings → Microphone</li>
+                    <li><strong>No microphone detected:</strong> Check if microphone is connected and working</li>
+                    <li><strong>Extension not loading:</strong> Check console for manifest errors</li>
+                    <li><strong>Voice not working:</strong> Try refreshing the page and allowing permissions again</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testMicrophonePermission() {
+            const resultsDiv = document.getElementById('testResults');
+            const outputDiv = document.getElementById('testOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = '<p>Testing microphone permission...</p>';
+            
+            try {
+                const permissionResult = await navigator.permissions.query({ name: 'microphone' });
+                outputDiv.innerHTML = `
+                    <p><strong>Permission Status:</strong> ${permissionResult.state}</p>
+                    <p><strong>Permission State:</strong> ${permissionResult.state}</p>
+                    <p><strong>Permission Name:</strong> ${permissionResult.name}</p>
+                `;
+                
+                if (permissionResult.state === 'granted') {
+                    resultsDiv.className = 'status success';
+                } else if (permissionResult.state === 'denied') {
+                    resultsDiv.className = 'status error';
+                } else {
+                    resultsDiv.className = 'status warning';
+                }
+            } catch (error) {
+                outputDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+                resultsDiv.className = 'status error';
+            }
+        }
+        
+        async function testMicrophoneAccess() {
+            const resultsDiv = document.getElementById('testResults');
+            const outputDiv = document.getElementById('testOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = '<p>Testing microphone access...</p>';
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                outputDiv.innerHTML = `
+                    <p><strong>✅ Microphone Access Granted!</strong></p>
+                    <p><strong>Stream Active:</strong> ${stream.active}</p>
+                    <p><strong>Tracks:</strong> ${stream.getTracks().length}</p>
+                `;
+                resultsDiv.className = 'status success';
+                
+                // Stop the stream
+                stream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                outputDiv.innerHTML = `<p><strong>❌ Microphone Access Denied:</strong> ${error.message}</p>`;
+                resultsDiv.className = 'status error';
+            }
+        }
+        
+        async function checkPermissionStatus() {
+            const resultsDiv = document.getElementById('testResults');
+            const outputDiv = document.getElementById('testOutput');
+            
+            resultsDiv.style.display = 'block';
+            outputDiv.innerHTML = '<p>Checking permission status...</p>';
+            
+            try {
+                const permissionResult = await navigator.permissions.query({ name: 'microphone' });
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const audioDevices = devices.filter(device => device.kind === 'audioinput');
+                
+                outputDiv.innerHTML = `
+                    <p><strong>Permission Status:</strong> ${permissionResult.state}</p>
+                    <p><strong>Audio Devices Found:</strong> ${audioDevices.length}</p>
+                    <p><strong>Extension Detected:</strong> ${typeof chrome !== 'undefined' && chrome.runtime ? 'Yes' : 'No'}</p>
+                `;
+                
+                resultsDiv.className = 'status info';
+            } catch (error) {
+                outputDiv.innerHTML = `<p><strong>Error:</strong> ${error.message}</p>`;
+                resultsDiv.className = 'status error';
+            }
+        }
+        
+        // Auto-check on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Permission test page loaded');
+            console.log('Extension detected:', typeof chrome !== 'undefined' && chrome.runtime);
+        });
+    </script>
+</body>
+</html> 

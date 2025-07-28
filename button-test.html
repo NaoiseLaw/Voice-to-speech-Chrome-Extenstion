@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Button Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .popup-simulation {
+            width: 400px;
+            height: 500px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            margin: 20px auto;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .popup-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .popup-main {
+            padding: 20px 24px;
+            height: calc(100% - 120px);
+            overflow-y: auto;
+        }
+        .popup-footer {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #eee;
+        }
+        .voice-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            cursor: pointer;
+            margin: 0 auto 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 0 4px;
+        }
+        .action-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+        }
+        .settings {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+        .setting-row:last-child {
+            margin-bottom: 0;
+        }
+        .setting-row label {
+            font-size: 13px;
+            color: #555;
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .setting-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 13px;
+            background: white;
+            color: #333;
+            min-width: 160px;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+        .setting-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            color: #555;
+            font-weight: 500;
+            padding: 4px 0;
+            transition: color 0.2s ease;
+        }
+        .checkbox-label:hover {
+            color: #333;
+        }
+        .checkbox-label input[type="checkbox"] {
+            display: none;
+        }
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            position: relative;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        .checkbox-label:hover .checkmark {
+            border-color: #667eea;
+        }
+        .checkbox-label input[type="checkbox"]:checked + .checkmark {
+            background: #667eea;
+            border-color: #667eea;
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+        }
+        .checkbox-label input[type="checkbox"]:checked + .checkmark::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .settings-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+        .settings-btn:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            color: #333;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Settings Button Improvements</h1>
+        
+        <div class="test-section">
+            <h3>📏 Larger Settings Buttons</h3>
+            <p>The settings section buttons have been made larger and more prominent for better usability.</p>
+            
+            <div class="status info">
+                <strong>Improvements Made:</strong>
+                <ul>
+                    <li>✅ Settings padding: 16px → 20px</li>
+                    <li>✅ Setting row gap: 12px → 16px</li>
+                    <li>✅ Label font size: 12px → 13px</li>
+                    <li>✅ Select padding: 6px 10px → 8px 12px</li>
+                    <li>✅ Select min-width: 140px → 160px</li>
+                    <li>✅ Checkbox size: 16px → 20px</li>
+                    <li>✅ Settings button: Enhanced styling</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="popup-simulation">
+            <div class="popup-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-size: 20px; background: rgba(255,255,255,0.2); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">🎤</span>
+                    <h1 style="font-size: 16px; margin: 0;">Voice Input</h1>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; font-size: 11px;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #4CAF50;"></span>
+                    <span>Ready</span>
+                </div>
+            </div>
+            
+            <div class="popup-main">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <button class="voice-btn">
+                        <span style="font-size: 24px;">🎤</span>
+                        <span style="font-size: 10px; font-weight: 500; text-transform: uppercase;">Start Recording</span>
+                    </button>
+                    
+                    <div style="min-height: 40px; display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <p style="font-size: 12px; color: #666; margin: 0;">Click the button above to start voice recording</p>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="action-btn" disabled>
+                        <span style="font-size: 12px;">📝</span>
+                        Insert Text
+                    </button>
+                    <button class="action-btn" disabled>
+                        <span style="font-size: 12px;">📋</span>
+                        Copy Text
+                    </button>
+                </div>
+                
+                <div class="settings">
+                    <div class="setting-row">
+                        <label>Language:</label>
+                        <select class="setting-select">
+                            <option>English (US)</option>
+                            <option>Spanish</option>
+                            <option>French</option>
+                            <option>German</option>
+                            <option>Italian</option>
+                        </select>
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label class="checkbox-label">
+                            <input type="checkbox" checked>
+                            <span class="checkmark"></span>
+                            Auto-insert text
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="popup-footer">
+                <button class="settings-btn">
+                    <span style="font-size: 13px;">⚙️</span>
+                    Settings
+                </button>
+                <span style="font-size: 10px; color: #999;">v1.0.0</span>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ Button Size Verification</h3>
+            <div class="status success">
+                <strong>All buttons should now be larger and more prominent:</strong>
+                <ul>
+                    <li>✅ Language dropdown: Larger and more readable</li>
+                    <li>✅ Checkbox: Bigger (20px) with better hover effects</li>
+                    <li>✅ Settings button: Enhanced with hover animations</li>
+                    <li>✅ All text: Larger font sizes (13px)</li>
+                    <li>✅ Better spacing: Increased gaps and padding</li>
+                    <li>✅ Hover effects: Smooth transitions and visual feedback</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 Test Instructions</h3>
+            <ol>
+                <li>Load the extension in Chrome</li>
+                <li>Click the extension icon</li>
+                <li>Check the settings section buttons</li>
+                <li>Hover over the language dropdown</li>
+                <li>Click the checkbox to test</li>
+                <li>Hover over the Settings button</li>
+                <li>Verify all buttons are larger and more accessible</li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html> 

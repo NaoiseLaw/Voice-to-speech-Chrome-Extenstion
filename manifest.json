@@ -6,8 +6,7 @@
   "permissions": [
     "activeTab",
     "storage",
-    "scripting",
-    "microphone"
+    "scripting"
   ],
   "host_permissions": [
     "https://*/*",

@@ -134,23 +134,7 @@ class PopupController {
 
   async startVoiceInput() {
     try {
-      // Check microphone permission first
-      const permissionResponse = await chrome.runtime.sendMessage({ 
-        type: 'CHECK_PERMISSION' 
-      });
-
-      if (!permissionResponse.hasPermission) {
-        const granted = await chrome.runtime.sendMessage({ 
-          type: 'REQUEST_PERMISSION' 
-        });
-        
-        if (!granted) {
-          this.showError('Microphone permission denied');
-          return;
-        }
-      }
-
-      // Start voice input
+      // Start voice input - permission will be handled by content script
       const response = await chrome.runtime.sendMessage({ 
         type: 'START_VOICE_INPUT',
         language: this.settings.language

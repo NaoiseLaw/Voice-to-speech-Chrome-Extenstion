@@ -146,12 +146,23 @@ class BackgroundService {
   }
 
   async checkMicrophonePermission() {
+    // Chrome extensions don't have direct microphone permission
+    // We'll check if the content script can access microphone
     try {
-      const result = await chrome.permissions.contains({
-        permissions: ['microphone']
-      });
-      this.permissionGranted = result;
-      return result;
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]) {
+        const result = await chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          function: () => {
+            return navigator.permissions.query({ name: 'microphone' })
+              .then(result => result.state === 'granted')
+              .catch(() => false);
+          }
+        });
+        this.permissionGranted = result[0]?.result || false;
+        return this.permissionGranted;
+      }
+      return false;
     } catch (error) {
       console.error('Error checking microphone permission:', error);
       return false;
@@ -159,12 +170,25 @@ class BackgroundService {
   }
 
   async requestMicrophonePermission() {
+    // Request microphone permission through content script
     try {
-      const granted = await chrome.permissions.request({
-        permissions: ['microphone']
-      });
-      this.permissionGranted = granted;
-      return granted;
+      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+      if (tabs[0]) {
+        const result = await chrome.scripting.executeScript({
+          target: { tabId: tabs[0].id },
+          function: () => {
+            return navigator.mediaDevices.getUserMedia({ audio: true })
+              .then(stream => {
+                stream.getTracks().forEach(track => track.stop());
+                return true;
+              })
+              .catch(() => false);
+          }
+        });
+        this.permissionGranted = result[0]?.result || false;
+        return this.permissionGranted;
+      }
+      return false;
     } catch (error) {
       console.error('Error requesting microphone permission:', error);
       return false;
